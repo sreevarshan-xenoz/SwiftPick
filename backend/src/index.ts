@@ -5,6 +5,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import morgan from 'morgan';
 import fileUpload from 'express-fileupload';
+import path from 'path';
 
 // Import routes
 import authRoutes from './routes/auth.routes';
@@ -24,9 +25,14 @@ const PORT = process.env.PORT || 5000;
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
+app.use(cors({
+  origin: process.env.NODE_ENV === 'production' 
+    ? process.env.FRONTEND_URL 
+    : 'http://localhost:3000',
+  credentials: true
+}));
 app.use(helmet());
-app.use(morgan('dev'));
+app.use(morgan(process.env.NODE_ENV === 'production' ? 'combined' : 'dev'));
 app.use(fileUpload({
   limits: { fileSize: 50 * 1024 * 1024 }, // 50MB max file size
   useTempFiles: true,
@@ -41,9 +47,23 @@ app.use('/api/wallet', walletRoutes);
 app.use('/api/kyc', kycRoutes);
 app.use('/api/bank', bankRoutes);
 
+// Serve static files in production
+if (process.env.NODE_ENV === 'production') {
+  // Set static folder
+  app.use(express.static(path.join(__dirname, '../../frontend/out')));
+
+  app.get('*', (req: Request, res: Response) => {
+    res.sendFile(path.resolve(__dirname, '../../frontend/out', 'index.html'));
+  });
+}
+
 // Health check route
 app.get('/health', (req: Request, res: Response) => {
-  res.status(200).json({ status: 'ok', message: 'Server is running' });
+  res.status(200).json({ 
+    status: 'ok', 
+    message: 'Server is running',
+    environment: process.env.NODE_ENV
+  });
 });
 
 // Error handling middleware
@@ -62,7 +82,7 @@ mongoose
     console.log('Connected to MongoDB');
     // Start the server
     app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
+      console.log(`Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
     });
   })
   .catch((error) => {

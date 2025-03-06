@@ -20,6 +20,8 @@ SwiftPick is a modern delivery platform that connects travelers with people who 
 - Tailwind CSS
 - React Context
 - Chart.js
+- Express.js
+- MongoDB
 
 ## Getting Started
 
@@ -30,23 +32,92 @@ git clone https://github.com/sreevarshan-xenoz/SwiftPick.git
 
 2. Install dependencies:
 ```bash
+# Install frontend dependencies
 cd swiftpick
+npm install
+
+# Install backend dependencies
+cd backend
 npm install
 ```
 
-3. Run the development server:
+3. Set up environment variables:
 ```bash
-npm run dev
+# Frontend (.env.local)
+NEXT_PUBLIC_API_URL=http://localhost:5000
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-nextauth-secret
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+
+# Backend (.env)
+PORT=5000
+MONGODB_URI=your-mongodb-uri
+JWT_SECRET=your-jwt-secret
 ```
 
-4. Open (http://localhost:3000) in your browser.
+4. Run the development servers:
+```bash
+# Run both frontend and backend
+npm run dev:all
 
-## Environment Variables
+# Or run them separately
+npm run dev        # Frontend
+cd backend && npm run dev  # Backend
+```
 
-Create a `.env.local` file in the root directory with the following variables:
+## Deployment
+
+### Backend Deployment (Express.js)
+
+1. Set up production environment variables:
+```bash
+# backend/.env.production
+PORT=5000
+NODE_ENV=production
+MONGODB_URI=your_mongodb_atlas_uri
+JWT_SECRET=your_production_jwt_secret
+FRONTEND_URL=https://your-frontend-domain.com
 ```
-NEXT_PUBLIC_API_URL=your_api_url
+
+2. Build and deploy:
+```bash
+cd backend
+npm run build
+npm run deploy
 ```
+
+### Frontend Deployment (Next.js)
+
+1. Update production environment variables:
+```bash
+# .env.production
+NEXT_PUBLIC_API_URL=https://your-backend-domain.com
+```
+
+2. Build and export:
+```bash
+npm run build
+```
+
+3. Deploy the `out` directory to your hosting provider.
+
+### Deployment Options
+
+1. **Vercel (Recommended for Frontend)**
+   - Connect your GitHub repository
+   - Configure environment variables
+   - Vercel will automatically build and deploy
+
+2. **Railway/Heroku (Backend)**
+   - Connect your GitHub repository
+   - Configure environment variables
+   - Push to main branch to trigger deployment
+
+3. **MongoDB Atlas**
+   - Set up a production MongoDB cluster
+   - Configure network access and database user
+   - Use the connection string in your backend
 
 ## Contributing
 
