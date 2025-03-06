@@ -1,23 +1,56 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { SuccessPopup } from '../../components/common/SuccessPopup';
+import { useAuth } from '../../context/AuthContext';
 
 export default function Login() {
   const router = useRouter();
+  const { login, googleLogin, loading, error, user, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     password: '',
   });
   const [showSuccess, setShowSuccess] = useState(false);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+  useEffect(() => {
+    // If user is already authenticated, redirect to dashboard
+    if (isAuthenticated) {
+      router.push('/dashboard');
+    }
+  }, [isAuthenticated, router]);
+
+  // Show error from auth context
+  useEffect(() => {
+    if (error) {
+      setLocalError(error);
+    }
+  }, [error]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // TODO: Implement actual login logic
-    setShowSuccess(true);
-    setTimeout(() => {
-      router.push('/dashboard');
-    }, 1500);
+    setLocalError(null);
+    
+    if (!formData.email || !formData.password) {
+      setLocalError('Please enter both email and password');
+      return;
+    }
+    
+    try {
+      await login(formData.email, formData.password);
+      setShowSuccess(true);
+    } catch (err) {
+      // Error is handled by the auth context
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    try {
+      await googleLogin();
+    } catch (err) {
+      // Error is handled by the auth context
+    }
   };
 
   return (
@@ -44,6 +77,12 @@ export default function Login() {
           </h2>
         </div>
 
+        {localError && (
+          <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+            <span className="block sm:inline">{localError}</span>
+          </div>
+        )}
+
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="rounded-md shadow-sm space-y-4">
             <div>
@@ -60,6 +99,7 @@ export default function Login() {
                 placeholder="Email address"
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                disabled={loading}
               />
             </div>
             <div>
@@ -76,6 +116,7 @@ export default function Login() {
                 placeholder="Password"
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                disabled={loading}
               />
             </div>
           </div>
@@ -104,8 +145,9 @@ export default function Login() {
             <button
               type="submit"
               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transform hover:scale-105 transition-all duration-300"
+              disabled={loading}
             >
-              Sign in
+              {loading ? 'Signing in...' : 'Sign in'}
             </button>
           </div>
 
@@ -124,6 +166,8 @@ export default function Login() {
             <div className="mt-6 grid grid-cols-2 gap-3">
               <button
                 type="button"
+                onClick={handleGoogleLogin}
+                disabled={loading}
                 className="w-full inline-flex justify-center py-2 px-4 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 transform hover:scale-105 transition-all duration-300"
               >
                 <span className="sr-only">Sign in with Google</span>
