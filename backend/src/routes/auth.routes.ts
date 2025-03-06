@@ -1,6 +1,6 @@
 import express, { Request, Response } from 'express';
 import { body } from 'express-validator';
-import { register, login, getMe } from '../controllers/auth.controller';
+import { register, login, getMe, googleAuth } from '../controllers/auth.controller';
 import { protect } from '../middleware/auth.middleware';
 
 const router = express.Router();
@@ -28,6 +28,18 @@ router.post(
     body('password').exists().withMessage('Password is required'),
   ],
   login as express.RequestHandler
+);
+
+// @route   POST /api/auth/google
+router.post(
+  '/google',
+  [
+    body('email').isEmail().withMessage('Please include a valid email'),
+    body('name').optional(),
+    body('image').optional(),
+    body('role').optional().isIn(['sender', 'traveler']).withMessage('Invalid role'),
+  ],
+  googleAuth as express.RequestHandler
 );
 
 // @route   GET /api/auth/me

@@ -115,8 +115,8 @@ export default function SignupForm() {
     }
     
     try {
-      // We should store the role in localStorage or similar before redirecting
-      localStorage.setItem('preferredRole', role);
+      // For now, we'll just redirect to Google login
+      // In a production app, we would pass the role to the backend
       await googleLogin();
     } catch (error) {
       console.error('Error with Google signup:', error);

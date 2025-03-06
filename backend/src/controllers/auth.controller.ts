@@ -98,6 +98,70 @@ export const login = async (req: Request, res: Response) => {
   }
 };
 
+// @desc    Google OAuth login/register
+// @route   POST /api/auth/google
+// @access  Public
+export const googleAuth = async (req: Request, res: Response) => {
+  try {
+    const { name, email, image } = req.body;
+
+    if (!email) {
+      return res.status(400).json({ message: 'Email is required' });
+    }
+
+    // Check if user exists
+    let user = await User.findOne({ email });
+
+    if (user) {
+      // User exists, log them in
+      // Check if account is active
+      if (user.accountStatus !== 'active') {
+        return res.status(403).json({ message: `Your account is ${user.accountStatus}` });
+      }
+
+      // Update user's profile image if provided and not already set
+      if (image && !user.profileImage) {
+        user.profileImage = image;
+        await user.save();
+      }
+    } else {
+      // User doesn't exist, create a new account
+      // Get the preferred role from the request or default to 'sender'
+      const role = req.body.role || 'sender';
+
+      // Create a random password for the user (they can reset it later)
+      const randomPassword = Math.random().toString(36).slice(-8);
+
+      user = await User.create({
+        name,
+        email,
+        password: randomPassword,
+        role,
+        profileImage: image,
+        accountStatus: 'active',
+        isVerified: true, // Since they're verified through Google
+        phone: '', // This can be updated later
+      });
+    }
+
+    res.json({
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role,
+        accountStatus: user.accountStatus,
+        walletBalance: user.walletBalance,
+        profileImage: user.profileImage,
+      },
+      token: generateToken(user),
+    });
+  } catch (error: any) {
+    console.error('Google auth error:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
 // @desc    Get current user profile
 // @route   GET /api/auth/me
 // @access  Private

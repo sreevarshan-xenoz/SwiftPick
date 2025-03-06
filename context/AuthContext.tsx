@@ -124,6 +124,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     try {
       setLoading(true);
       setError(null);
+      
+      // Simply redirect to Google login
       await signIn('google', { callbackUrl: '/dashboard' });
     } catch (err: any) {
       setError(err.message);

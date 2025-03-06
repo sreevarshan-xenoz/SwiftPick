@@ -64,6 +64,9 @@ export default NextAuth({
       // If it's a Google sign-in, handle it differently
       if (account?.provider === 'google') {
         try {
+          // Default role is 'sender'
+          const preferredRole = 'sender';
+          
           // Make a request to your backend to register/login the Google user
           const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/auth/google`, {
             method: 'POST',
@@ -72,6 +75,7 @@ export default NextAuth({
               name: user.name,
               email: user.email,
               image: user.image,
+              role: preferredRole,
             }),
           });
 
