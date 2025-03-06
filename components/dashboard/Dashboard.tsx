@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import UserProfile from './UserProfile';
+import DashboardLayout from '../layouts/DashboardLayout';
 
 // Mock user data (replace with actual user data from your authentication system)
 const mockUser = {
@@ -20,82 +21,97 @@ export default function Dashboard() {
   const router = useRouter();
 
   return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-      {/* Header */}
-      <header className="bg-white dark:bg-gray-800 shadow">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
-        </div>
-      </header>
-
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-        <div className="flex flex-col lg:flex-row gap-6">
-          {/* Left Column - User Profile */}
-          <div className="w-full lg:w-1/3 mb-6 lg:mb-0 order-2 lg:order-1">
-            <UserProfile user={mockUser} />
+    <DashboardLayout>
+      <div className="bg-gray-50 dark:bg-gray-900">
+        {/* Header */}
+        <header className="bg-white dark:bg-gray-800 shadow">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Dashboard</h1>
           </div>
+        </header>
 
-          {/* Right Column - Actions and Stats */}
-          <div className="w-full lg:w-2/3 order-1 lg:order-2">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-              {/* Send Package Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div className="p-4">
-                  <div className="text-3xl mb-2">📦</div>
-                  <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">Send a Package</h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
-                    Connect with travelers heading your way and send your package quickly and affordably.
-                  </p>
-                  <button
+        {/* Main content */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Action Cards - Take 2/3 of the space on large screens */}
+            <div className="lg:col-span-2 space-y-6">
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Quick Actions</h2>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Send Package Card */}
+                  <div 
                     onClick={() => router.push('/send-package')}
-                    className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-medium hover:bg-blue-700 transition-colors duration-200 text-sm"
+                    className="bg-blue-50 dark:bg-blue-900/20 border border-blue-100 dark:border-blue-800 rounded-lg p-4 cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 transition-colors"
                   >
-                    Send Package
-                  </button>
-                </div>
-              </div>
+                    <div className="flex items-center mb-2">
+                      <div className="bg-blue-500 rounded-full p-2 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Send a Package</h3>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">Create a new delivery request for your package</p>
+                  </div>
 
-              {/* Receive/Deliver Package Card */}
-              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300">
-                <div className="p-4">
-                  <div className="text-3xl mb-2">🚗</div>
-                  <h2 className="text-lg md:text-xl font-bold text-gray-900 dark:text-white mb-2">Deliver Packages</h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-4 text-sm">
-                    Turn your daily commute into an opportunity. Deliver packages and earn rewards.
-                  </p>
-                  <button
+                  {/* Find Deliveries Card */}
+                  <div 
                     onClick={() => router.push('/available-deliveries')}
-                    className="w-full bg-green-600 text-white py-2 px-4 rounded-md font-medium hover:bg-green-700 transition-colors duration-200 text-sm"
+                    className="bg-green-50 dark:bg-green-900/20 border border-green-100 dark:border-green-800 rounded-lg p-4 cursor-pointer hover:bg-green-100 dark:hover:bg-green-900/30 transition-colors"
                   >
-                    Find Deliveries
-                  </button>
+                    <div className="flex items-center mb-2">
+                      <div className="bg-green-500 rounded-full p-2 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Find Deliveries</h3>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">Browse available delivery requests near you</p>
+                  </div>
+
+                  {/* Track Deliveries Card */}
+                  <div 
+                    onClick={() => router.push('/dashboard/delivery-tracking')}
+                    className="bg-purple-50 dark:bg-purple-900/20 border border-purple-100 dark:border-purple-800 rounded-lg p-4 cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 transition-colors"
+                  >
+                    <div className="flex items-center mb-2">
+                      <div className="bg-purple-500 rounded-full p-2 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Track Deliveries</h3>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">Monitor the status of your active deliveries</p>
+                  </div>
+
+                  {/* Analytics Card */}
+                  <div 
+                    onClick={() => router.push('/dashboard/analytics')}
+                    className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-100 dark:border-yellow-800 rounded-lg p-4 cursor-pointer hover:bg-yellow-100 dark:hover:bg-yellow-900/30 transition-colors"
+                  >
+                    <div className="flex items-center mb-2">
+                      <div className="bg-yellow-500 rounded-full p-2 mr-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                      </div>
+                      <h3 className="text-lg font-medium text-gray-900 dark:text-white">Analytics</h3>
+                    </div>
+                    <p className="text-gray-600 dark:text-gray-300">View insights and statistics about your deliveries</p>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
-                <div className="text-xs text-gray-500 dark:text-gray-400">Active Deliveries</div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">0</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
-                <div className="text-xs text-gray-500 dark:text-gray-400">Completed</div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">0</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
-                <div className="text-xs text-gray-500 dark:text-gray-400">Rating</div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">⭐ 0.0</div>
-              </div>
-              <div className="bg-white dark:bg-gray-800 p-3 rounded-lg shadow">
-                <div className="text-xs text-gray-500 dark:text-gray-400">Rewards</div>
-                <div className="text-lg font-bold text-gray-900 dark:text-white">₹0</div>
-              </div>
+            {/* User Profile - Take 1/3 of the space on large screens */}
+            <div className="lg:col-span-1">
+              <UserProfile user={mockUser} />
             </div>
           </div>
         </div>
-      </main>
-    </div>
+      </div>
+    </DashboardLayout>
   );
 } 

@@ -1,13 +1,15 @@
 import React from 'react';
-import DashboardLayout from '../../components/layouts/DashboardLayout';
+import Head from 'next/head';
+import Dashboard from '../../components/dashboard/Dashboard';
 
-export default function Dashboard() {
+export default function DashboardPage() {
   return (
-    <DashboardLayout>
-      {/* Your existing dashboard content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Dashboard content */}
-      </div>
-    </DashboardLayout>
+    <>
+      <Head>
+        <title>Dashboard - SwiftPick</title>
+        <meta name="description" content="SwiftPick Dashboard - Send or deliver packages" />
+      </Head>
+      <Dashboard />
+    </>
   );
 } 
