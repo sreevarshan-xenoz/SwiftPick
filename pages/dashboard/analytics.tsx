@@ -1,7 +1,7 @@
 import React from 'react';
 import Head from 'next/head';
 import Analytics from '../../components/dashboard/Analytics';
-import Navigation from '../../components/common/Navigation';
+import DashboardLayout from '../../components/layouts/DashboardLayout';
 
 // Mock data for demonstration
 const mockData = {
@@ -26,8 +26,7 @@ export default function AnalyticsPage() {
         <meta name="description" content="View your delivery and earnings analytics on SwiftPick" />
       </Head>
 
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
-        <Navigation />
+      <DashboardLayout>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex justify-between items-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h1>
@@ -37,7 +36,7 @@ export default function AnalyticsPage() {
           </div>
           <Analytics deliveryStats={mockData.deliveryStats} earnings={mockData.earnings} />
         </main>
-      </div>
+      </DashboardLayout>
     </>
   );
 } 
