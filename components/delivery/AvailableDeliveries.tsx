@@ -57,240 +57,214 @@ export default function AvailableDeliveries() {
   const router = useRouter();
   const [location, setLocation] = useState('');
   const [radius, setRadius] = useState('50');
-  const [sortBy, setSortBy] = useState<'distance' | 'price' | 'urgency'>('distance');
+  const [sortBy, setSortBy] = useState('distance');
   const [loading, setLoading] = useState(false);
   const [showSuccess, setShowSuccess] = useState(false);
-  const [selectedDelivery, setSelectedDelivery] = useState<string | null>(null);
-  const [filters, setFilters] = useState({
-    maxWeight: '',
-    priceRange: '',
-    urgency: 'all'
-  });
+  const [acceptedDeliveryId, setAcceptedDeliveryId] = useState('');
+  const [maxWeight, setMaxWeight] = useState('');
+  const [urgency, setUrgency] = useState('all');
+  const [deliveries, setDeliveries] = useState(mockDeliveries);
 
   const handleAcceptDelivery = async (deliveryId: string) => {
-    setSelectedDelivery(deliveryId);
     setLoading(true);
+    setAcceptedDeliveryId(deliveryId);
     
-    try {
-      // TODO: Implement API call to accept delivery
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated API call
+    // Simulate API call
+    setTimeout(() => {
+      setLoading(false);
       setShowSuccess(true);
+      
+      // Redirect after showing success message
       setTimeout(() => {
         router.push('/dashboard/delivery-tracking');
       }, 1500);
-    } catch (error) {
-      console.error('Error accepting delivery:', error);
-    } finally {
-      setLoading(false);
-    }
+    }, 1000);
   };
 
   const getUrgencyColor = (urgency: DeliveryRequest['urgency']) => {
     switch (urgency) {
-      case 'express':
-        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
+      case 'normal':
+        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
       case 'urgent':
         return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300';
+      case 'express':
+        return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300';
       default:
-        return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300';
+        return 'bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300';
     }
   };
 
   return (
-    <div className="space-y-6">
-      {showSuccess && (
-        <SuccessPopup
-          message="Delivery accepted! Redirecting to tracking..."
-          duration={1500}
-        />
-      )}
-
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pb-10">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex items-center space-x-4 mb-6">
           <BackButton />
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+          <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
             Available Deliveries
           </h1>
         </div>
-      </div>
 
-      {/* Search and Filters */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-        <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
-          {/* Location Search */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Your Location
-            </label>
-            <input
-              type="text"
-              value={location}
-              onChange={(e) => setLocation(e.target.value)}
-              placeholder="Enter your location"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          {/* Radius */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Search Radius (km)
-            </label>
-            <select
-              value={radius}
-              onChange={(e) => setRadius(e.target.value)}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="25">25 km</option>
-              <option value="50">50 km</option>
-              <option value="100">100 km</option>
-              <option value="200">200 km</option>
-            </select>
-          </div>
-
-          {/* Weight Filter */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Max Weight (kg)
-            </label>
-            <input
-              type="number"
-              value={filters.maxWeight}
-              onChange={(e) => setFilters({ ...filters, maxWeight: e.target.value })}
-              placeholder="Enter max weight"
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            />
-          </div>
-
-          {/* Sort By */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Sort By
-            </label>
-            <select
-              value={sortBy}
-              onChange={(e) => setSortBy(e.target.value as 'distance' | 'price' | 'urgency')}
-              className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
-            >
-              <option value="distance">Distance</option>
-              <option value="price">Price</option>
-              <option value="urgency">Urgency</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Additional Filters */}
-        <div className="mt-4 flex items-center space-x-4">
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              className="form-radio text-blue-600"
-              name="urgency"
-              value="all"
-              checked={filters.urgency === 'all'}
-              onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
-            />
-            <span className="ml-2 text-gray-700 dark:text-gray-300">All</span>
-          </label>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              className="form-radio text-blue-600"
-              name="urgency"
-              value="normal"
-              checked={filters.urgency === 'normal'}
-              onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
-            />
-            <span className="ml-2 text-gray-700 dark:text-gray-300">Normal</span>
-          </label>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              className="form-radio text-blue-600"
-              name="urgency"
-              value="urgent"
-              checked={filters.urgency === 'urgent'}
-              onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
-            />
-            <span className="ml-2 text-gray-700 dark:text-gray-300">Urgent</span>
-          </label>
-          <label className="inline-flex items-center">
-            <input
-              type="radio"
-              className="form-radio text-blue-600"
-              name="urgency"
-              value="express"
-              checked={filters.urgency === 'express'}
-              onChange={(e) => setFilters({ ...filters, urgency: e.target.value })}
-            />
-            <span className="ml-2 text-gray-700 dark:text-gray-300">Express</span>
-          </label>
-        </div>
-      </div>
-
-      {/* Deliveries List */}
-      <div className="space-y-4">
-        {mockDeliveries.map((delivery) => (
-          <div
-            key={delivery.id}
-            className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300"
-          >
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                  {delivery.itemName}
-                </h3>
-                <p className="text-sm text-gray-500 dark:text-gray-400">
-                  ID: {delivery.id}
-                </p>
-              </div>
-              <span className={`px-3 py-1 rounded-full text-sm ${getUrgencyColor(delivery.urgency)}`}>
-                {delivery.urgency.toUpperCase()}
-              </span>
+        {/* Search and Filter Section */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 mb-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label htmlFor="location" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Location
+              </label>
+              <input
+                type="text"
+                id="location"
+                placeholder="Enter your location"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                value={location}
+                onChange={(e) => setLocation(e.target.value)}
+              />
             </div>
-
-            <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">From</p>
-                <p className="font-medium text-gray-900 dark:text-white">{delivery.from}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">To</p>
-                <p className="font-medium text-gray-900 dark:text-white">{delivery.to}</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Weight</p>
-                <p className="font-medium text-gray-900 dark:text-white">{delivery.weight} kg</p>
-              </div>
-              <div>
-                <p className="text-sm text-gray-500 dark:text-gray-400">Distance</p>
-                <p className="font-medium text-gray-900 dark:text-white">{delivery.distance} km</p>
-              </div>
-            </div>
-
-            <div className="mt-6 flex items-center justify-between">
-              <div className="text-2xl font-bold text-gray-900 dark:text-white">
-                ₹{delivery.price}
-              </div>
-              <button
-                onClick={() => handleAcceptDelivery(delivery.id)}
-                disabled={loading && selectedDelivery === delivery.id}
-                className="px-6 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed transition-colors"
+            <div>
+              <label htmlFor="radius" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Search Radius
+              </label>
+              <select
+                id="radius"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                value={radius}
+                onChange={(e) => setRadius(e.target.value)}
               >
-                {loading && selectedDelivery === delivery.id ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  'Accept Delivery'
-                )}
+                <option value="25">25 km</option>
+                <option value="50">50 km</option>
+                <option value="100">100 km</option>
+                <option value="200">200 km</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="maxWeight" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Max Package Weight (kg)
+              </label>
+              <input
+                type="number"
+                id="maxWeight"
+                placeholder="Any weight"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                value={maxWeight}
+                onChange={(e) => setMaxWeight(e.target.value)}
+              />
+            </div>
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label htmlFor="urgency" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Urgency Level
+              </label>
+              <select
+                id="urgency"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                value={urgency}
+                onChange={(e) => setUrgency(e.target.value)}
+              >
+                <option value="all">All</option>
+                <option value="normal">Normal</option>
+                <option value="urgent">Urgent</option>
+                <option value="express">Express</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="sortBy" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Sort By
+              </label>
+              <select
+                id="sortBy"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white text-sm"
+                value={sortBy}
+                onChange={(e) => setSortBy(e.target.value)}
+              >
+                <option value="distance">Distance</option>
+                <option value="price">Price (High to Low)</option>
+                <option value="urgency">Urgency</option>
+              </select>
+            </div>
+            <div className="flex items-end">
+              <button
+                className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 text-sm font-medium"
+              >
+                Search
               </button>
             </div>
-
-            <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-              Posted {new Date(delivery.postedAt).toLocaleString()}
-            </div>
           </div>
-        ))}
+        </div>
+
+        {/* Deliveries List */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {deliveries.map((delivery) => (
+            <div
+              key={delivery.id}
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow duration-300"
+            >
+              <div className="p-4">
+                <div className="flex justify-between items-start mb-2">
+                  <div>
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{delivery.itemName}</h3>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">ID: {delivery.id}</p>
+                  </div>
+                  <span className={`text-xs px-2 py-1 rounded-full ${getUrgencyColor(delivery.urgency)}`}>
+                    {delivery.urgency.charAt(0).toUpperCase() + delivery.urgency.slice(1)}
+                  </span>
+                </div>
+                
+                <div className="space-y-2 mb-3 text-sm">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
+                    <span className="font-medium mr-2">From:</span> {delivery.from}
+                  </div>
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
+                    <span className="font-medium mr-2">To:</span> {delivery.to}
+                  </div>
+                  <div className="grid grid-cols-3 gap-2 text-gray-700 dark:text-gray-300">
+                    <div>
+                      <span className="font-medium">Weight:</span>
+                      <p>{delivery.weight} kg</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Distance:</span>
+                      <p>{delivery.distance} km</p>
+                    </div>
+                    <div>
+                      <span className="font-medium">Price:</span>
+                      <p className="text-green-600 dark:text-green-400 font-semibold">₹{delivery.price}</p>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="flex justify-between items-center mt-4">
+                  <div className="text-xs text-gray-500 dark:text-gray-400">
+                    Posted {new Date(delivery.postedAt).toLocaleDateString()}
+                  </div>
+                  <button
+                    onClick={() => handleAcceptDelivery(delivery.id)}
+                    disabled={loading && acceptedDeliveryId === delivery.id}
+                    className="bg-green-600 text-white py-1.5 px-3 rounded-md text-sm font-medium hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {loading && acceptedDeliveryId === delivery.id ? (
+                      <div className="flex items-center">
+                        <LoadingSpinner size="sm" />
+                        <span className="ml-2">Accepting...</span>
+                      </div>
+                    ) : (
+                      'Accept Delivery'
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
+      
+      {showSuccess && (
+        <SuccessPopup
+          message="Delivery accepted successfully! Redirecting to tracking page..."
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
     </div>
   );
 } 

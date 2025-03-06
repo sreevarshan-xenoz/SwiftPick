@@ -29,27 +29,27 @@ export default function Dashboard() {
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid lg:grid-cols-3 gap-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="flex flex-col lg:flex-row gap-6">
           {/* Left Column - User Profile */}
-          <div className="lg:col-span-1">
+          <div className="w-full lg:w-1/3 mb-6 lg:mb-0">
             <UserProfile user={mockUser} />
           </div>
 
           {/* Right Column - Actions and Stats */}
-          <div className="lg:col-span-2">
-            <div className="grid md:grid-cols-2 gap-8">
+          <div className="w-full lg:w-2/3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
               {/* Send Package Card */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
-                  <div className="text-4xl mb-4">📦</div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Send a Package</h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <div className="p-5">
+                  <div className="text-4xl mb-3">📦</div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Send a Package</h2>
+                  <p className="text-gray-600 dark:text-gray-300 mb-5 text-sm md:text-base">
                     Connect with travelers heading your way and send your package quickly and affordably.
                   </p>
                   <button
                     onClick={() => router.push('/send-package')}
-                    className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300"
+                    className="w-full bg-blue-600 text-white py-2 md:py-3 px-4 rounded-lg font-semibold hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 text-sm md:text-base"
                   >
                     Send Package
                   </button>
@@ -58,15 +58,15 @@ export default function Dashboard() {
 
               {/* Receive/Deliver Package Card */}
               <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden hover:shadow-xl transition-shadow duration-300">
-                <div className="p-6">
-                  <div className="text-4xl mb-4">🚗</div>
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">Deliver Packages</h2>
-                  <p className="text-gray-600 dark:text-gray-300 mb-6">
+                <div className="p-5">
+                  <div className="text-4xl mb-3">🚗</div>
+                  <h2 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">Deliver Packages</h2>
+                  <p className="text-gray-600 dark:text-gray-300 mb-5 text-sm md:text-base">
                     Turn your daily commute into an opportunity. Deliver packages and earn rewards.
                   </p>
                   <button
                     onClick={() => router.push('/available-deliveries')}
-                    className="w-full bg-green-600 text-white py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transform hover:scale-105 transition-all duration-300"
+                    className="w-full bg-green-600 text-white py-2 md:py-3 px-4 rounded-lg font-semibold hover:bg-green-700 transform hover:scale-105 transition-all duration-300 text-sm md:text-base"
                   >
                     Find Deliveries
                   </button>
@@ -75,22 +75,22 @@ export default function Dashboard() {
             </div>
 
             {/* Quick Stats */}
-            <div className="mt-8 grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow animate-fade-in">
-                <div className="text-sm text-gray-500 dark:text-gray-400">Active Deliveries</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
+            <div className="mt-6 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow animate-fade-in">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Active Deliveries</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">0</div>
               </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow animate-fade-in">
-                <div className="text-sm text-gray-500 dark:text-gray-400">Completed</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">0</div>
+              <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow animate-fade-in">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Completed</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">0</div>
               </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow animate-fade-in">
-                <div className="text-sm text-gray-500 dark:text-gray-400">Rating</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">⭐ 0.0</div>
+              <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow animate-fade-in">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Rating</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">⭐ 0.0</div>
               </div>
-              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow animate-fade-in">
-                <div className="text-sm text-gray-500 dark:text-gray-400">Rewards</div>
-                <div className="text-2xl font-bold text-gray-900 dark:text-white">₹0</div>
+              <div className="bg-white dark:bg-gray-800 p-3 md:p-4 rounded-lg shadow animate-fade-in">
+                <div className="text-xs md:text-sm text-gray-500 dark:text-gray-400">Rewards</div>
+                <div className="text-lg md:text-2xl font-bold text-gray-900 dark:text-white">₹0</div>
               </div>
             </div>
           </div>
