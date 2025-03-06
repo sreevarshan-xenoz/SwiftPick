@@ -55,30 +55,34 @@ const languages = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam'
 const currencies = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function UserProfile({ user }: UserProfileProps) {
-  const [activeTab, setActiveTab] = useState<'profile' | 'wallet' | 'security' | 'preferences'>('profile');
+  const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
-  const [showSettings, setShowSettings] = useState(false);
-  const [profileData, setProfileData] = useState(user);
+  const [formData, setFormData] = useState({
+    name: user.name,
+    email: user.email,
+    phone: user.phone,
+  });
+  const [formErrors, setFormErrors] = useState<FormErrors>({});
+  const [profileImage, setProfileImage] = useState('/default-avatar.png');
   const [showSuccess, setShowSuccess] = useState(false);
-  const [errors, setErrors] = useState<FormErrors>({});
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
 
-    if (!profileData.name.trim()) {
+    if (!formData.name.trim()) {
       newErrors.name = 'Name is required';
     }
 
-    if (!profileData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
+    if (!formData.email.match(/^[^\s@]+@[^\s@]+\.[^\s@]+$/)) {
       newErrors.email = 'Please enter a valid email address';
     }
 
-    if (!profileData.phone.match(/^\d{10}$/)) {
+    if (!formData.phone.match(/^\d{10}$/)) {
       newErrors.phone = 'Please enter a valid 10-digit phone number';
     }
 
-    setErrors(newErrors);
+    setFormErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -131,56 +135,58 @@ export default function UserProfile({ user }: UserProfileProps) {
         <div className="relative group">
           <div className="relative w-20 h-20 rounded-full overflow-hidden bg-gray-200 dark:bg-gray-700">
             <Image
-              src="/default-avatar.png"
-              alt="Profile"
+              src={profileImage}
+              alt={user.name}
               fill
               className="rounded-full object-cover"
             />
-            <div
-              onClick={() => fileInputRef.current?.click()}
-              className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-            >
-              <span className="text-white text-sm">Change</span>
-            </div>
-          </div>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleImageUpload}
-            accept="image/*"
-            className="hidden"
-          />
-        </div>
-        <div className="ml-4 flex-1">
-          <div className="flex items-center space-x-2">
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
-              {isEditing ? (
-                <div>
-                  <input
-                    type="text"
-                    value={profileData.name}
-                    onChange={(e) => setProfileData({ ...profileData, name: e.target.value })}
-                    className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1"
-                  />
-                  {errors.name && (
-                    <p className="text-xs text-red-500 mt-1">{errors.name}</p>
-                  )}
-                </div>
-              ) : (
-                profileData.name
-              )}
-            </h3>
-            {profileData.isVerified && (
-              <span className="text-blue-500" title="Verified Account">✓</span>
+            {isEditing && (
+              <label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1 cursor-pointer shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <input
+                  type="file"
+                  id="profile-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+              </label>
             )}
           </div>
-          <div className="flex items-center space-x-2 mt-1">
-            <p className="text-gray-600 dark:text-gray-400">
-              {profileData.role.charAt(0).toUpperCase() + profileData.role.slice(1)}
-            </p>
-            <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(profileData.accountStatus)}`}>
-              {profileData.accountStatus || 'Active'}
-            </span>
+          <div className="ml-4 flex-1">
+            <div className="flex items-center space-x-2">
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
+                {isEditing ? (
+                  <div>
+                    <input
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                      className="bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-1"
+                    />
+                    {formErrors.name && (
+                      <p className="text-xs text-red-500 mt-1">{formErrors.name}</p>
+                    )}
+                  </div>
+                ) : (
+                  formData.name
+                )}
+              </h3>
+              {user.isVerified && (
+                <span className="text-blue-500" title="Verified Account">✓</span>
+              )}
+            </div>
+            <div className="flex items-center space-x-2 mt-1">
+              <p className="text-gray-600 dark:text-gray-400">
+                {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+              </p>
+              <span className={`px-2 py-1 rounded-full text-xs ${getStatusColor(user.accountStatus)}`}>
+                {user.accountStatus || 'Active'}
+              </span>
+            </div>
           </div>
         </div>
       </div>
@@ -194,16 +200,16 @@ export default function UserProfile({ user }: UserProfileProps) {
             <div>
               <input
                 type="email"
-                value={profileData.email}
-                onChange={(e) => setProfileData({ ...profileData, email: e.target.value })}
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
               />
-              {errors.email && (
-                <p className="text-xs text-red-500 mt-1">{errors.email}</p>
+              {formErrors.email && (
+                <p className="text-xs text-red-500 mt-1">{formErrors.email}</p>
               )}
             </div>
           ) : (
-            <p className="text-gray-900 dark:text-white">{profileData.email}</p>
+            <p className="text-gray-900 dark:text-white">{formData.email}</p>
           )}
         </div>
 
@@ -215,16 +221,16 @@ export default function UserProfile({ user }: UserProfileProps) {
             <div>
               <input
                 type="tel"
-                value={profileData.phone}
-                onChange={(e) => setProfileData({ ...profileData, phone: e.target.value })}
+                value={formData.phone}
+                onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
                 className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
               />
-              {errors.phone && (
-                <p className="text-xs text-red-500 mt-1">{errors.phone}</p>
+              {formErrors.phone && (
+                <p className="text-xs text-red-500 mt-1">{formErrors.phone}</p>
               )}
             </div>
           ) : (
-            <p className="text-gray-900 dark:text-white">{profileData.phone}</p>
+            <p className="text-gray-900 dark:text-white">{formData.phone}</p>
           )}
         </div>
 
@@ -232,7 +238,7 @@ export default function UserProfile({ user }: UserProfileProps) {
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
             Member Since
           </label>
-          <p className="text-gray-900 dark:text-white">{profileData.joinedDate}</p>
+          <p className="text-gray-900 dark:text-white">{user.joinedDate}</p>
         </div>
       </div>
     </>
@@ -242,7 +248,7 @@ export default function UserProfile({ user }: UserProfileProps) {
     <div className="space-y-6">
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg p-6 text-white">
         <h3 className="text-lg font-semibold mb-2">Wallet Balance</h3>
-        <p className="text-3xl font-bold">₹{profileData.walletBalance || 0}</p>
+        <p className="text-3xl font-bold">₹{user.walletBalance || 0}</p>
         <div className="mt-4 flex space-x-2">
           <button className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
             Add Money
@@ -357,8 +363,10 @@ export default function UserProfile({ user }: UserProfileProps) {
               Language
             </label>
             <select
-              value={profileData.preferredLanguage || 'English'}
-              onChange={(e) => setProfileData({ ...profileData, preferredLanguage: e.target.value })}
+              value={user.preferredLanguage || 'English'}
+              onChange={(e) => {
+                // TODO: Implement language change
+              }}
               className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
             >
               {languages.map((lang) => (
@@ -372,8 +380,10 @@ export default function UserProfile({ user }: UserProfileProps) {
               Currency
             </label>
             <select
-              value={profileData.currency || 'INR'}
-              onChange={(e) => setProfileData({ ...profileData, currency: e.target.value })}
+              value={user.currency || 'INR'}
+              onChange={(e) => {
+                // TODO: Implement currency change
+              }}
               className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
             >
               {currencies.map((currency) => (
@@ -409,62 +419,101 @@ export default function UserProfile({ user }: UserProfileProps) {
   );
 
   return (
-    <div className="space-y-6">
-      {showSuccess && (
-        <SuccessPopup message="Profile updated successfully!" duration={3000} />
-      )}
-
-      {/* Profile Card */}
-      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
-        <div className="p-6">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Profile</h2>
-            <div className="flex space-x-4">
-              <button
-                onClick={() => setIsEditing(!isEditing)}
-                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 font-medium"
-              >
-                {isEditing ? 'Cancel' : 'Edit Profile'}
-              </button>
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md overflow-hidden">
+      {/* Profile Header */}
+      <div className="p-4 bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+        <div className="flex flex-col sm:flex-row items-center">
+          <div className="relative mb-4 sm:mb-0 sm:mr-4">
+            <img
+              src={profileImage}
+              alt={user.name}
+              className="w-20 h-20 rounded-full border-4 border-white object-cover"
+            />
+            {isEditing && (
+              <label htmlFor="profile-upload" className="absolute bottom-0 right-0 bg-white dark:bg-gray-800 rounded-full p-1 cursor-pointer shadow-md">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 13a3 3 0 11-6 0 3 3 0 016 0z" />
+                </svg>
+                <input
+                  type="file"
+                  id="profile-upload"
+                  className="hidden"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                />
+              </label>
+            )}
+          </div>
+          <div className="text-center sm:text-left">
+            <h2 className="text-xl font-bold">{user.name}</h2>
+            <p className="text-sm text-blue-100">{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+            <div className="flex items-center justify-center sm:justify-start mt-1">
+              <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${getStatusColor()}`}>
+                {user.accountStatus?.toUpperCase() || 'ACTIVE'}
+              </span>
+              {user.isVerified && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                  VERIFIED
+                </span>
+              )}
             </div>
           </div>
-
-          {/* Tabs */}
-          <div className="border-b border-gray-200 dark:border-gray-700 mb-6">
-            <nav className="-mb-px flex space-x-8">
-              {(['profile', 'wallet', 'security', 'preferences'] as const).map((tab) => (
-                <button
-                  key={tab}
-                  onClick={() => setActiveTab(tab)}
-                  className={`${
-                    activeTab === tab
-                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
-                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300'
-                  } whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm capitalize`}
-                >
-                  {tab}
-                </button>
-              ))}
-            </nav>
-          </div>
-
-          {/* Tab Content */}
-          {activeTab === 'profile' && renderProfileTab()}
-          {activeTab === 'wallet' && renderWalletTab()}
-          {activeTab === 'security' && renderSecurityTab()}
-          {activeTab === 'preferences' && renderPreferencesTab()}
-
-          {isEditing && activeTab === 'profile' && (
-            <div className="mt-6">
-              <button
-                onClick={handleSave}
-                className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
-              >
-                Save Changes
-              </button>
-            </div>
-          )}
         </div>
+      </div>
+
+      {/* Tabs */}
+      <div className="border-b border-gray-200 dark:border-gray-700">
+        <div className="flex overflow-x-auto">
+          <button
+            onClick={() => setActiveTab('profile')}
+            className={`py-2 px-3 text-sm font-medium ${
+              activeTab === 'profile'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Profile
+          </button>
+          <button
+            onClick={() => setActiveTab('wallet')}
+            className={`py-2 px-3 text-sm font-medium ${
+              activeTab === 'wallet'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Wallet
+          </button>
+          <button
+            onClick={() => setActiveTab('security')}
+            className={`py-2 px-3 text-sm font-medium ${
+              activeTab === 'security'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Security
+          </button>
+          <button
+            onClick={() => setActiveTab('preferences')}
+            className={`py-2 px-3 text-sm font-medium ${
+              activeTab === 'preferences'
+                ? 'border-b-2 border-blue-500 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300'
+            }`}
+          >
+            Preferences
+          </button>
+        </div>
+      </div>
+
+      {/* Tab Content */}
+      <div className="p-4">
+        {activeTab === 'profile' && renderProfileTab()}
+        {activeTab === 'wallet' && renderWalletTab()}
+        {activeTab === 'security' && renderSecurityTab()}
+        {activeTab === 'preferences' && renderPreferencesTab()}
       </div>
     </div>
   );
