@@ -7,6 +7,7 @@ import { useRouter } from 'next/router';
 import { useState, useEffect } from 'react';
 import { LoadingSpinner } from '../components/common/LoadingSpinner';
 import Navigation from '../components/common/Navigation';
+import Head from 'next/head';
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter();
@@ -32,6 +33,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
     <SessionProvider session={session}>
       <AuthProvider>
         <ThemeProvider>
+          <Head>
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+          </Head>
           <div className="min-h-screen transition-colors duration-200 dark:bg-gray-900">
             {!isAuthPage && <Navigation />}
             

@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import { body, param, query } from 'express-validator';
 import {
   createDelivery,
@@ -13,13 +13,13 @@ import { protect, isSender, isTraveler } from '../middleware/auth.middleware';
 const router = express.Router();
 
 // All routes require authentication
-router.use(protect);
+router.use(protect as unknown as RequestHandler);
 
 // @route   POST /api/deliveries
 // @access  Private (Senders only)
 router.post(
   '/',
-  isSender,
+  isSender as unknown as RequestHandler,
   [
     body('itemName').notEmpty().withMessage('Item name is required'),
     body('itemDescription').notEmpty().withMessage('Item description is required'),
@@ -31,14 +31,14 @@ router.post(
       .withMessage('Urgency must be normal, urgent, or express'),
     body('price').isNumeric().withMessage('Price must be a number'),
   ],
-  createDelivery as express.RequestHandler
+  createDelivery as unknown as RequestHandler
 );
 
 // @route   GET /api/deliveries/available
 // @access  Private (Travelers only)
 router.get(
   '/available',
-  isTraveler,
+  isTraveler as unknown as RequestHandler,
   [
     query('location').optional(),
     query('radius').optional().isNumeric().withMessage('Radius must be a number'),
@@ -46,25 +46,25 @@ router.get(
     query('urgency').optional(),
     query('sortBy').optional(),
   ],
-  getAvailableDeliveries as express.RequestHandler
+  getAvailableDeliveries as unknown as RequestHandler
 );
 
 // @route   PUT /api/deliveries/:id/accept
 // @access  Private (Travelers only)
 router.put(
   '/:id/accept',
-  isTraveler,
+  isTraveler as unknown as RequestHandler,
   [
     param('id').isMongoId().withMessage('Invalid delivery ID'),
   ],
-  acceptDelivery as express.RequestHandler
+  acceptDelivery as unknown as RequestHandler
 );
 
 // @route   PUT /api/deliveries/:id/status
 // @access  Private (Travelers only)
 router.put(
   '/:id/status',
-  isTraveler,
+  isTraveler as unknown as RequestHandler,
   [
     param('id').isMongoId().withMessage('Invalid delivery ID'),
     body('status')
@@ -73,12 +73,12 @@ router.put(
     body('location').notEmpty().withMessage('Location is required'),
     body('description').notEmpty().withMessage('Description is required'),
   ],
-  updateDeliveryStatus as express.RequestHandler
+  updateDeliveryStatus as unknown as RequestHandler
 );
 
 // @route   GET /api/deliveries/my-deliveries
 // @access  Private
-router.get('/my-deliveries', getMyDeliveries as express.RequestHandler);
+router.get('/my-deliveries', getMyDeliveries as unknown as RequestHandler);
 
 // @route   GET /api/deliveries/:id
 // @access  Private
@@ -87,7 +87,7 @@ router.get(
   [
     param('id').isMongoId().withMessage('Invalid delivery ID'),
   ],
-  getDeliveryById as express.RequestHandler
+  getDeliveryById as unknown as RequestHandler
 );
 
 export default router; 

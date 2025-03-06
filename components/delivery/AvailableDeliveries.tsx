@@ -4,59 +4,102 @@ import { LoadingSpinner } from '../common/LoadingSpinner';
 import { SuccessPopup } from '../common/SuccessPopup';
 import { BackButton } from '../common/BackButton';
 import { useAuth } from '../../context/AuthContext';
+import { useSession } from 'next-auth/react';
 
-interface DeliveryRequest {
-  id: string;
+interface DeliveryStatus {
+  status: 'pending' | 'accepted' | 'picked_up' | 'in_transit' | 'delivered' | 'cancelled';
+  location: string;
+  timestamp: Date;
+  description: string;
+}
+
+interface Delivery {
+  _id: string;
   itemName: string;
-  from: string;
-  to: string;
-  weight: number;
-  price: number;
+  itemDescription: string;
+  itemWeight: number;
+  pickupAddress: string;
+  dropAddress: string;
+  sender: {
+    _id: string;
+    name: string;
+    email: string;
+  };
   urgency: 'normal' | 'urgent' | 'express';
+  price: number;
   distance: number;
-  postedAt: string;
+  status: DeliveryStatus['status'];
+  trackingHistory: DeliveryStatus[];
+  createdAt: string;
+  updatedAt: string;
 }
 
 export default function AvailableDeliveries() {
   const router = useRouter();
   const { user } = useAuth();
-  const [location, setLocation] = useState('');
+  const { data: session } = useSession();
+  const [startLocation, setStartLocation] = useState('');
+  const [endLocation, setEndLocation] = useState('');
   const [radius, setRadius] = useState('50');
   const [sortBy, setSortBy] = useState('distance');
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [initialLoading, setInitialLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [acceptedDeliveryId, setAcceptedDeliveryId] = useState('');
   const [maxWeight, setMaxWeight] = useState('');
   const [urgency, setUrgency] = useState('all');
-  const [deliveries, setDeliveries] = useState<DeliveryRequest[]>([]);
+  const [deliveries, setDeliveries] = useState<Delivery[]>([]);
+  const [matchedDeliveries, setMatchedDeliveries] = useState<Delivery[]>([]);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchDeliveries = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const queryParams = new URLSearchParams();
+      if (startLocation) queryParams.append('startLocation', startLocation);
+      if (endLocation) queryParams.append('endLocation', endLocation);
+      
+      const response = await fetch(`http://localhost:5000/api/deliveries/available?${queryParams}`, {
+        headers: {
+          'Authorization': `Bearer ${session?.user?.id}`,
+        },
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch deliveries');
+      }
+
+      const data = await response.json();
+      setDeliveries(data.data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'An error occurred');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // This would be replaced with actual API calls in the future
-    // Example:
-    // const fetchDeliveries = async () => {
-    //   try {
-    //     setInitialLoading(true);
-    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/deliveries/available`, {
-    //       headers: { Authorization: `Bearer ${user?.token}` }
-    //     });
-    //     const data = await response.json();
-    //     setDeliveries(data);
-    //   } catch (error) {
-    //     console.error('Error fetching deliveries:', error);
-    //   } finally {
-    //     setInitialLoading(false);
-    //   }
-    // };
-    // fetchDeliveries();
+    if (session?.user?.id) {
+      fetchDeliveries();
+    }
+  }, [session?.user?.id, startLocation, endLocation]);
 
-    // For now, just set loading to false after a delay
-    const timer = setTimeout(() => {
-      setInitialLoading(false);
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [user]);
+  useEffect(() => {
+    // Filter deliveries based on route match
+    if (startLocation && endLocation && deliveries.length > 0) {
+      const filtered = deliveries.filter(delivery => {
+        // Simple route matching logic (can be enhanced with actual distance calculations)
+        const isOnRoute = delivery.pickupAddress.toLowerCase().includes(startLocation.toLowerCase()) ||
+                         delivery.dropAddress.toLowerCase().includes(endLocation.toLowerCase());
+        return isOnRoute;
+      });
+      setMatchedDeliveries(filtered);
+    } else {
+      setMatchedDeliveries(deliveries);
+    }
+  }, [startLocation, endLocation, deliveries]);
 
   const handleAcceptDelivery = async (deliveryId: string) => {
     setLoading(true);
@@ -76,7 +119,7 @@ export default function AvailableDeliveries() {
     }, 3000);
   };
 
-  const getUrgencyColor = (urgency: DeliveryRequest['urgency']) => {
+  const getUrgencyColor = (urgency: Delivery['urgency']) => {
     const colors = {
       normal: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
       urgent: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
@@ -86,9 +129,8 @@ export default function AvailableDeliveries() {
   };
 
   const handleSearch = () => {
-    // This would be replaced with actual API calls in the future
-    // For now, just simulate loading
     setLoading(true);
+    // This would be replaced with actual API calls in the future
     setTimeout(() => {
       setLoading(false);
     }, 1000);
@@ -109,36 +151,51 @@ export default function AvailableDeliveries() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Available Deliveries</h1>
         </div>
 
-        {/* Filters */}
-        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 mb-8">
+        {/* Search Filters */}
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Search Filters</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+          
+          {/* Travel Route */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                Your Location
+                Your Start Location
               </label>
               <input
                 type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Enter your location"
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
+                value={startLocation}
+                onChange={(e) => setStartLocation(e.target.value)}
+                placeholder="Enter your starting point"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                Your End Location
+              </label>
+              <input
+                type="text"
+                value={endLocation}
+                onChange={(e) => setEndLocation(e.target.value)}
+                placeholder="Enter your destination"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+              />
+            </div>
+          </div>
+
+          {/* Additional Filters */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 Search Radius (km)
               </label>
-              <select
+              <input
+                type="number"
                 value={radius}
                 onChange={(e) => setRadius(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
-              >
-                <option value="10">10 km</option>
-                <option value="25">25 km</option>
-                <option value="50">50 km</option>
-                <option value="100">100 km</option>
-              </select>
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                min="1"
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -148,8 +205,8 @@ export default function AvailableDeliveries() {
                 type="number"
                 value={maxWeight}
                 onChange={(e) => setMaxWeight(e.target.value)}
-                placeholder="Any weight"
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
+                min="0"
               />
             </div>
             <div>
@@ -159,7 +216,7 @@ export default function AvailableDeliveries() {
               <select
                 value={urgency}
                 onChange={(e) => setUrgency(e.target.value)}
-                className="w-full bg-gray-50 dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded px-3 py-2"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 dark:bg-gray-700 dark:text-white"
               >
                 <option value="all">All</option>
                 <option value="normal">Normal</option>
@@ -168,6 +225,7 @@ export default function AvailableDeliveries() {
               </select>
             </div>
           </div>
+
           <div className="mt-4 flex justify-between items-center">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
@@ -194,11 +252,26 @@ export default function AvailableDeliveries() {
           </div>
         </div>
 
+        {/* Route Match Info */}
+        {startLocation && endLocation && (
+          <div className="bg-blue-50 dark:bg-blue-900/30 rounded-lg p-4 mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
+              Route Match
+            </h3>
+            <p className="text-gray-600 dark:text-gray-300">
+              Showing deliveries along your route from {startLocation} to {endLocation}
+            </p>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+              Found {matchedDeliveries.length} matching deliveries
+            </p>
+          </div>
+        )}
+
         {/* Delivery List */}
-        {deliveries.length > 0 ? (
+        {matchedDeliveries.length > 0 ? (
           <div className="space-y-6">
-            {deliveries.map((delivery) => (
-              <div key={delivery.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+            {matchedDeliveries.map((delivery) => (
+              <div key={delivery._id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center">
                   <div className="mb-4 md:mb-0">
                     <h3 className="text-xl font-semibold text-gray-900 dark:text-white">
@@ -209,13 +282,13 @@ export default function AvailableDeliveries() {
                         {delivery.urgency.toUpperCase()}
                       </span>
                       <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
-                        Posted {new Date(delivery.postedAt).toLocaleDateString()}
+                        Posted {new Date(delivery.createdAt).toLocaleDateString()}
                       </span>
                     </div>
                   </div>
                   <div className="text-right">
                     <p className="text-2xl font-bold text-gray-900 dark:text-white">₹{delivery.price}</p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400">{delivery.weight} kg</p>
+                    <p className="text-sm text-gray-500 dark:text-gray-400">{delivery.itemWeight} kg</p>
                   </div>
                 </div>
 
@@ -227,7 +300,7 @@ export default function AvailableDeliveries() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">From</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{delivery.from}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{delivery.pickupAddress}</p>
                       </div>
                     </div>
                   </div>
@@ -238,7 +311,7 @@ export default function AvailableDeliveries() {
                       </div>
                       <div>
                         <p className="text-sm text-gray-500 dark:text-gray-400">To</p>
-                        <p className="font-medium text-gray-900 dark:text-white">{delivery.to}</p>
+                        <p className="font-medium text-gray-900 dark:text-white">{delivery.dropAddress}</p>
                       </div>
                     </div>
                   </div>
@@ -253,11 +326,11 @@ export default function AvailableDeliveries() {
                     <span className="text-sm text-gray-500 dark:text-gray-400">{delivery.distance} km</span>
                   </div>
                   <button
-                    onClick={() => handleAcceptDelivery(delivery.id)}
-                    disabled={loading && acceptedDeliveryId === delivery.id}
+                    onClick={() => handleAcceptDelivery(delivery._id)}
+                    disabled={loading && acceptedDeliveryId === delivery._id}
                     className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                   >
-                    {loading && acceptedDeliveryId === delivery.id ? (
+                    {loading && acceptedDeliveryId === delivery._id ? (
                       <span className="flex items-center">
                         <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                           <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
@@ -275,13 +348,12 @@ export default function AvailableDeliveries() {
           </div>
         ) : (
           <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-10 text-center">
-            <div className="text-5xl mb-4">🚚</div>
-            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No deliveries available</h3>
+            <div className="text-5xl mb-4">🔍</div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No deliveries found</h3>
             <p className="text-gray-600 dark:text-gray-400 mb-6">
-              There are no delivery requests matching your criteria at the moment.
-            </p>
-            <p className="text-gray-600 dark:text-gray-400">
-              Try adjusting your search filters or check back later.
+              {startLocation && endLocation 
+                ? "No deliveries match your route at the moment."
+                : "Enter your travel route to find matching deliveries."}
             </p>
           </div>
         )}
@@ -289,7 +361,7 @@ export default function AvailableDeliveries() {
 
       {showSuccess && (
         <SuccessPopup
-          message="Delivery accepted successfully! You will be redirected to your dashboard."
+          message="Delivery accepted successfully! Redirecting to dashboard..."
           onClose={() => setShowSuccess(false)}
         />
       )}

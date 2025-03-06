@@ -1,5 +1,4 @@
 import React from 'react';
-import Image from 'next/image';
 import { useRouter } from 'next/router';
 import { useTheme } from '../../context/ThemeContext';
 
@@ -18,24 +17,16 @@ export default function WelcomeScreen() {
       </button>
 
       <div className="w-full max-w-md space-y-8 text-center animate-fade-in">
-        {/* Logo */}
-        <div className="relative w-32 h-32 mx-auto animate-bounce-slow">
-          <Image
-            src="/logo.png"
-            alt="SwiftPick Logo"
-            width={128}
-            height={128}
-            className="object-contain"
-            priority
-            loading="eager"
-          />
+        {/* Brand Name */}
+        <div className="mx-auto animate-bounce-slow">
+          <h1 className="text-5xl font-bold text-white">SwiftPick</h1>
         </div>
 
         {/* Welcome Text */}
         <div className="text-white">
-          <h1 className="text-4xl font-bold mb-4 animate-slide-down">
+          <h2 className="text-4xl font-bold mb-4 animate-slide-down">
             Welcome to SwiftPick
-          </h1>
+          </h2>
           <p className="text-xl opacity-90">
             Join our community of travelers and senders for faster, cheaper, and eco-friendly deliveries
           </p>

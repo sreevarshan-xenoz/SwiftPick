@@ -1,32 +1,42 @@
-import { Response, NextFunction } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import User from '../models/user.model';
-import { AuthRequest, JwtPayload } from '../types/auth';
+import User, { IUser } from '../models/user.model';
+
+interface AuthRequest extends Request {
+  user?: { 
+    id: string; 
+    role?: 'sender' | 'traveler' | 'admin';
+    accountStatus?: 'active' | 'pending' | 'suspended';
+  };
+}
 
 export const protect = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  let token;
+  try {
+    let token;
 
-  // Check if token exists in headers
-  if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
-    try {
-      // Get token from header
+    if (req.headers.authorization?.startsWith('Bearer')) {
       token = req.headers.authorization.split(' ')[1];
-
-      // Verify token
-      const decoded = jwt.verify(token, process.env.JWT_SECRET as string) as JwtPayload;
-
-      // Get user from the token
-      req.user = await User.findById(decoded.id).select('-password');
-
-      next();
-    } catch (error) {
-      console.error('Authentication error:', error);
-      res.status(401).json({ message: 'Not authorized, token failed' });
     }
-  }
 
-  if (!token) {
-    res.status(401).json({ message: 'Not authorized, no token' });
+    if (!token) {
+      return res.status(401).json({ message: 'Not authorized, no token' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET || '') as { id: string };
+    const user = await User.findById(decoded.id).select('-password');
+
+    if (!user) {
+      return res.status(401).json({ message: 'Not authorized, user not found' });
+    }
+
+    req.user = { 
+      id: user.id, 
+      role: user.role,
+      accountStatus: user.accountStatus 
+    };
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Not authorized, invalid token' });
   }
 };
 
@@ -48,11 +58,21 @@ export const isTraveler = (req: AuthRequest, res: Response, next: NextFunction) 
   }
 };
 
-// Middleware to check if account is active
+export const admin = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  try {
+    if (req.user?.role !== 'admin') {
+      return res.status(403).json({ message: 'Not authorized as admin' });
+    }
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Server error' });
+  }
+};
+
 export const isActive = (req: AuthRequest, res: Response, next: NextFunction) => {
-  if (req.user && req.user.accountStatus === 'active') {
+  if (req.user?.accountStatus === 'active') {
     next();
   } else {
     res.status(403).json({ message: 'Account is not active' });
   }
-}; 
+};

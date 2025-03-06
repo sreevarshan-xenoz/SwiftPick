@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
+import Spending from '../delivery/Spending';
 
 interface DeliveryStatus {
   id: string;
@@ -18,6 +19,23 @@ interface Package {
   status: DeliveryStatus['status'];
   updatedAt: string;
   trackingHistory: DeliveryStatus[];
+  cost: number;
+}
+
+interface SpendingSummary {
+  totalSpent: number;
+  monthlySpent: number;
+  averagePerDelivery: number;
+  deliveriesThisMonth: number;
+  spendingByCategory: {
+    normal: number;
+    urgent: number;
+    express: number;
+  };
+  monthlySpending: {
+    labels: string[];
+    data: number[];
+  };
 }
 
 const statusColors = {
@@ -40,26 +58,24 @@ export default function DeliveryTracking() {
   const { user } = useAuth();
   const [packages, setPackages] = useState<Package[]>([]);
   const [loading, setLoading] = useState(true);
+  const [spendingSummary, setSpendingSummary] = useState<SpendingSummary>({
+    totalSpent: 15000,
+    monthlySpent: 3500,
+    averagePerDelivery: 750,
+    deliveriesThisMonth: 5,
+    spendingByCategory: {
+      normal: 8000,
+      urgent: 5000,
+      express: 2000,
+    },
+    monthlySpending: {
+      labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+      data: [2000, 2500, 1800, 3000, 2800, 3500],
+    },
+  });
 
   useEffect(() => {
     // This would be replaced with actual API calls in the future
-    // Example:
-    // const fetchDeliveries = async () => {
-    //   try {
-    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/deliveries`, {
-    //       headers: { Authorization: `Bearer ${session?.accessToken}` }
-    //     });
-    //     const data = await response.json();
-    //     setPackages(data);
-    //   } catch (error) {
-    //     console.error('Error fetching deliveries:', error);
-    //   } finally {
-    //     setLoading(false);
-    //   }
-    // };
-    // fetchDeliveries();
-
-    // For now, just set loading to false after a delay
     const timer = setTimeout(() => {
       setLoading(false);
     }, 1000);
@@ -83,6 +99,9 @@ export default function DeliveryTracking() {
           New Delivery
         </button>
       </div>
+
+      {/* Spending Component */}
+      <Spending spendingData={spendingSummary} />
 
       {/* Package List */}
       {packages.length > 0 ? (

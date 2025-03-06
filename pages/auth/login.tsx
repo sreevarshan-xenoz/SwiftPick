@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
-import Image from 'next/image';
 import { SuccessPopup } from '../../components/common/SuccessPopup';
 import { useAuth } from '../../context/AuthContext';
 
@@ -62,16 +61,8 @@ export default function Login() {
         />
       )}
       <div className="max-w-md w-full space-y-8">
-        <div>
-          <div className="relative w-24 h-24 mx-auto">
-            <Image
-              src="/logo.png"
-              alt="SwiftPick Logo"
-              width={96}
-              height={96}
-              className="object-contain"
-            />
-          </div>
+        <div className="flex flex-col items-center">
+          <h1 className="text-4xl font-bold text-gray-900 dark:text-white">SwiftPick</h1>
           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
             Sign in to your account
           </h2>

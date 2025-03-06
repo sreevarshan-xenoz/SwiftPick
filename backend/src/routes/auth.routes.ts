@@ -1,7 +1,8 @@
-import express, { Request, Response } from 'express';
+import express, { Request, Response, RequestHandler } from 'express';
 import { body } from 'express-validator';
 import { register, login, getMe, googleAuth } from '../controllers/auth.controller';
 import { protect } from '../middleware/auth.middleware';
+import { AuthRequest } from '../types/auth';
 
 const router = express.Router();
 
@@ -17,7 +18,7 @@ router.post(
       .withMessage('Password must be at least 6 characters long'),
     body('role').optional().isIn(['sender', 'traveler']).withMessage('Invalid role'),
   ],
-  register as express.RequestHandler
+  register as unknown as RequestHandler
 );
 
 // @route   POST /api/auth/login
@@ -27,7 +28,7 @@ router.post(
     body('email').isEmail().withMessage('Please include a valid email'),
     body('password').exists().withMessage('Password is required'),
   ],
-  login as express.RequestHandler
+  login as unknown as RequestHandler
 );
 
 // @route   POST /api/auth/google
@@ -39,10 +40,10 @@ router.post(
     body('image').optional(),
     body('role').optional().isIn(['sender', 'traveler']).withMessage('Invalid role'),
   ],
-  googleAuth as express.RequestHandler
+  googleAuth as unknown as RequestHandler
 );
 
 // @route   GET /api/auth/me
-router.get('/me', protect, getMe as express.RequestHandler);
+router.get('/me', protect as RequestHandler, getMe);
 
-export default router; 
+export default router;

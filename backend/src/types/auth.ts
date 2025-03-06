@@ -1,6 +1,7 @@
 import { Request } from 'express';
 import { Document, Types } from 'mongoose';
 import { IUser } from '../models/user.model';
+import { FileArray } from 'express-fileupload';
 
 export interface AuthUser extends Document {
   _id: Types.ObjectId;
@@ -16,6 +17,7 @@ export interface AuthUser extends Document {
 
 export interface AuthRequest extends Request {
   user?: AuthUser;
+  files?: FileArray;
 }
 
 export interface JwtPayload {

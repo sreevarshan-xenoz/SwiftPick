@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import { body, query } from 'express-validator';
 import {
   addMoney,
@@ -11,7 +11,7 @@ import { protect } from '../middleware/auth.middleware';
 const router = express.Router();
 
 // All routes require authentication
-router.use(protect);
+router.use(protect as unknown as RequestHandler);
 
 // @route   POST /api/wallet/add
 // @access  Private
@@ -33,12 +33,12 @@ router.post(
       .isIn(['credit_card', 'debit_card', 'bank_transfer', 'paypal'])
       .withMessage('Invalid payment method'),
   ],
-  addMoney as express.RequestHandler
+  addMoney as unknown as RequestHandler
 );
 
 // @route   GET /api/wallet/balance
 // @access  Private
-router.get('/balance', getWalletBalance as express.RequestHandler);
+router.get('/balance', getWalletBalance as unknown as RequestHandler);
 
 // @route   GET /api/wallet/transactions
 // @access  Private
@@ -49,7 +49,7 @@ router.get(
     query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('Limit must be between 1 and 100'),
     query('type').optional().isIn(['credit', 'debit', 'all']).withMessage('Type must be credit, debit, or all'),
   ],
-  getTransactions as express.RequestHandler
+  getTransactions as unknown as RequestHandler
 );
 
 // @route   POST /api/wallet/withdraw
@@ -73,7 +73,7 @@ router.post(
       .withMessage('Invalid withdrawal method'),
     body('accountDetails').notEmpty().withMessage('Account details are required'),
   ],
-  withdrawMoney as express.RequestHandler
+  withdrawMoney as unknown as RequestHandler
 );
 
 export default router; 

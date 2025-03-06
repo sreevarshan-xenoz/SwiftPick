@@ -30,11 +30,10 @@ export default function Navigation() {
     <nav className="bg-white dark:bg-gray-800 shadow-lg sticky top-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
-          {/* Logo and Brand */}
+          {/* Brand Name */}
           <div className="flex items-center">
             <Link href="/dashboard" className="flex items-center">
-              <span className="text-2xl mr-2">🚀</span>
-              <span className="font-bold text-xl text-gray-900 dark:text-white">SwiftPick</span>
+              <span className="text-xl font-bold text-gray-900 dark:text-white">SwiftPick</span>
             </Link>
           </div>
 

@@ -1,13 +1,14 @@
-import { Request, Response } from 'express';
+import { Request, Response, RequestHandler } from 'express';
 import { validationResult } from 'express-validator';
 import User from '../models/user.model';
 import { generateToken } from '../utils/jwt.utils';
 import { AuthRequest } from '../types/auth';
+import { ParamsDictionary } from 'express-serve-static-core';
 
 // @desc    Register a new user
 // @route   POST /api/auth/register
 // @access  Public
-export const register = async (req: Request, res: Response) => {
+export const register: RequestHandler = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -53,7 +54,7 @@ export const register = async (req: Request, res: Response) => {
 // @desc    Login user
 // @route   POST /api/auth/login
 // @access  Public
-export const login = async (req: Request, res: Response) => {
+export const login: RequestHandler = async (req: Request, res: Response) => {
   try {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -101,9 +102,14 @@ export const login = async (req: Request, res: Response) => {
 // @desc    Google OAuth login/register
 // @route   POST /api/auth/google
 // @access  Public
-export const googleAuth = async (req: Request, res: Response) => {
+export const googleAuth: RequestHandler = async (req: Request, res: Response) => {
   try {
-    const { name, email, image } = req.body;
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const { email, name, image, role } = req.body;
 
     if (!email) {
       return res.status(400).json({ message: 'Email is required' });
@@ -162,32 +168,19 @@ export const googleAuth = async (req: Request, res: Response) => {
   }
 };
 
-// @desc    Get current user profile
+// @desc    Get current user
 // @route   GET /api/auth/me
 // @access  Private
-export const getMe = async (req: AuthRequest, res: Response) => {
+export const getMe: RequestHandler<ParamsDictionary, any, any, any> = async (req, res) => {
   try {
-    const user = await User.findById(req.user?._id);
+    const authReq = req as AuthRequest;
+    const user = await User.findById(authReq.user?._id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
-
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      phone: user.phone,
-      role: user.role,
-      walletBalance: user.walletBalance,
-      preferredLanguage: user.preferredLanguage,
-      currency: user.currency,
-      isVerified: user.isVerified,
-      accountStatus: user.accountStatus,
-      joinedDate: user.joinedDate,
-      profileImage: user.profileImage,
-    });
+    res.json(user);
   } catch (error: any) {
-    console.error('Get profile error:', error);
+    console.error('Get user error:', error);
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 }; 

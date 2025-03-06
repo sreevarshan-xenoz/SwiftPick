@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { RequestHandler } from 'express';
 import { body } from 'express-validator';
 import { updateProfile, updatePassword, uploadProfileImage } from '../controllers/user.controller';
 import { protect } from '../middleware/auth.middleware';
@@ -6,7 +6,7 @@ import { protect } from '../middleware/auth.middleware';
 const router = express.Router();
 
 // All routes require authentication
-router.use(protect);
+router.use(protect as unknown as RequestHandler);
 
 // @route   PUT /api/users/profile
 router.put(
@@ -18,7 +18,7 @@ router.put(
     body('preferredLanguage').optional(),
     body('currency').optional(),
   ],
-  updateProfile as express.RequestHandler
+  updateProfile as unknown as RequestHandler
 );
 
 // @route   PUT /api/users/password
@@ -36,10 +36,10 @@ router.put(
       return true;
     }),
   ],
-  updatePassword as express.RequestHandler
+  updatePassword as unknown as RequestHandler
 );
 
 // @route   POST /api/users/profile-image
-router.post('/profile-image', uploadProfileImage as express.RequestHandler);
+router.post('/profile-image', uploadProfileImage as unknown as RequestHandler);
 
 export default router; 
