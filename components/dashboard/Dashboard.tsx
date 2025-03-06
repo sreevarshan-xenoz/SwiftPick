@@ -1,40 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import UserProfile from './UserProfile';
 import DashboardLayout from '../layouts/DashboardLayout';
+import { useAuth } from '../../context/AuthContext';
 
-// Mock user data (replace with actual user data from your authentication system)
-const mockUser = {
-  name: 'John Doe',
-  email: 'john.doe@example.com',
-  phone: '1234567890',
-  role: 'sender' as const,
-  joinedDate: 'January 2024',
-  isVerified: true,
-  accountStatus: 'active' as const,
-  walletBalance: 1500,
-  preferredLanguage: 'English',
-  currency: 'INR',
-};
-
-// Mock stats data
-const mockStats = {
-  activeDeliveries: 3,
-  completed: 12,
-  rating: 4.8,
-  rewards: 2500
-};
-
-// Mock recent activity
-const mockActivity = [
-  { id: 1, type: 'delivery', status: 'completed', description: 'Package delivered to Mumbai', time: '2 hours ago' },
-  { id: 2, type: 'payment', status: 'success', description: 'Wallet recharged with ₹500', time: '1 day ago' },
-  { id: 3, type: 'delivery', status: 'in_transit', description: 'Package en route to Delhi', time: '2 days ago' },
-];
+// Remove mock user data and use real user data from auth context
 
 export default function Dashboard() {
   const router = useRouter();
   const [showNotifications, setShowNotifications] = useState(false);
+  const { user, loading } = useAuth();
+  
+  // Default stats (will be replaced with API calls in the future)
+  const [stats, setStats] = useState({
+    activeDeliveries: 0,
+    completed: 0,
+    rating: 0,
+    rewards: 0
+  });
+  
+  // Default activity (will be replaced with API calls in the future)
+  const [activity, setActivity] = useState([]);
+
+  // Extract user's first name from email if name is not available
+  const getUserName = () => {
+    if (!user) return '';
+    if (user.name) return user.name.split(' ')[0];
+    if (user.email) {
+      // Extract name from email (part before @)
+      const emailName = user.email.split('@')[0];
+      // Capitalize first letter and replace dots/underscores with spaces
+      return emailName.charAt(0).toUpperCase() + 
+             emailName.slice(1).replace(/[._]/g, ' ');
+    }
+    return 'User';
+  };
+
+  // In the future, fetch real data from API
+  useEffect(() => {
+    // This would be replaced with actual API calls
+    // Example:
+    // const fetchUserStats = async () => {
+    //   try {
+    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/stats`, {
+    //       headers: { Authorization: `Bearer ${session?.accessToken}` }
+    //     });
+    //     const data = await response.json();
+    //     setStats(data);
+    //   } catch (error) {
+    //     console.error('Error fetching user stats:', error);
+    //   }
+    // };
+    // fetchUserStats();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
 
   return (
     <DashboardLayout>
@@ -44,7 +72,7 @@ export default function Dashboard() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, {mockUser.name.split(' ')[0]}</h1>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-white">Welcome back, {getUserName()}</h1>
                 <p className="text-gray-600 dark:text-gray-300 text-sm mt-1">Here's what's happening with your deliveries today.</p>
               </div>
               <div className="relative">
@@ -55,7 +83,7 @@ export default function Dashboard() {
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-gray-700 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
                   </svg>
-                  <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">3</span>
+                  <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 rounded-full text-xs text-white flex items-center justify-center">0</span>
                 </button>
                 
                 {showNotifications && (
@@ -64,23 +92,9 @@ export default function Dashboard() {
                       <h3 className="font-semibold text-gray-900 dark:text-white">Notifications</h3>
                     </div>
                     <div className="max-h-80 overflow-y-auto">
-                      <div className="p-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">New delivery request nearby</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">5 minutes ago</p>
+                      <div className="p-3 text-center text-gray-500 dark:text-gray-400">
+                        No notifications yet
                       </div>
-                      <div className="p-3 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Your package has been picked up</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">1 hour ago</p>
-                      </div>
-                      <div className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">Payment received for delivery #DEL123</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">Yesterday</p>
-                      </div>
-                    </div>
-                    <div className="p-2 border-t border-gray-200 dark:border-gray-700">
-                      <button className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:underline">
-                        View all notifications
-                      </button>
                     </div>
                   </div>
                 )}
@@ -102,7 +116,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Active Deliveries</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{mockStats.activeDeliveries}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.activeDeliveries}</p>
                 </div>
               </div>
             </div>
@@ -115,7 +129,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Completed</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{mockStats.completed}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.completed}</p>
                 </div>
               </div>
             </div>
@@ -128,7 +142,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Rating</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">{mockStats.rating}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">{stats.rating || 'N/A'}</p>
                 </div>
               </div>
             </div>
@@ -141,7 +155,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500 dark:text-gray-400">Rewards</p>
-                  <p className="text-xl font-bold text-gray-900 dark:text-white">₹{mockStats.rewards}</p>
+                  <p className="text-xl font-bold text-gray-900 dark:text-white">₹{stats.rewards}</p>
                 </div>
               </div>
             </div>
@@ -258,50 +272,77 @@ export default function Dashboard() {
                   <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Recent Activity</h2>
                   <button className="text-sm text-blue-600 dark:text-blue-400 hover:underline">View All</button>
                 </div>
-                <div className="space-y-4">
-                  {mockActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-start p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
-                      <div className={`p-2 rounded-full mr-3 ${
-                        activity.type === 'delivery' 
-                          ? activity.status === 'completed' 
-                            ? 'bg-green-100 dark:bg-green-900/30' 
-                            : 'bg-blue-100 dark:bg-blue-900/30'
-                          : 'bg-purple-100 dark:bg-purple-900/30'
-                      }`}>
-                        {activity.type === 'delivery' ? (
-                          activity.status === 'completed' ? (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-green-600 dark:text-green-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                
+                {activity.length > 0 ? (
+                  <div className="space-y-4">
+                    {activity.map((item: any) => (
+                      <div key={item.id} className="flex items-start p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors">
+                        <div className={`p-2 rounded-full mr-3 ${
+                          item.type === 'delivery' 
+                            ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' 
+                            : 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400'
+                        }`}>
+                          {item.type === 'delivery' ? (
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4" />
                             </svg>
                           ) : (
-                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600 dark:text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                             </svg>
-                          )
-                        ) : (
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-purple-600 dark:text-purple-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                          </svg>
-                        )}
+                          )}
+                        </div>
+                        <div className="flex-1">
+                          <p className="text-gray-900 dark:text-white font-medium">{item.description}</p>
+                          <div className="flex justify-between mt-1">
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              item.status === 'completed' 
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300' 
+                                : item.status === 'in_transit'
+                                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                                  : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
+                            }`}>
+                              {item.status === 'completed' ? 'Completed' : item.status === 'in_transit' ? 'In Transit' : 'Success'}
+                            </span>
+                            <span className="text-xs text-gray-500 dark:text-gray-400">{item.time}</span>
+                          </div>
+                        </div>
                       </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-medium text-gray-900 dark:text-white">{activity.description}</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400">{activity.time}</p>
-                      </div>
-                      <button className="text-gray-400 hover:text-gray-500 dark:hover:text-gray-300">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                        </svg>
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                ) : (
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <p>No recent activity</p>
+                    <p className="mt-2 text-sm">Your activity will appear here once you start using the platform</p>
+                  </div>
+                )}
               </div>
             </div>
 
             {/* User Profile - Take 1/3 of the space on large screens */}
             <div className="lg:col-span-1">
-              <UserProfile user={mockUser} />
+              <div className="bg-white dark:bg-gray-800 shadow rounded-lg p-6">
+                <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">Your Profile</h2>
+                {user && (
+                  <UserProfile 
+                    user={{
+                      name: user.name || getUserName(),
+                      email: user.email || '',
+                      phone: user.phone || '',
+                      role: user.role || 'sender',
+                      joinedDate: user.joinedDate || 'Recently joined',
+                      isVerified: user.isVerified || false,
+                      accountStatus: user.accountStatus || 'active',
+                      walletBalance: user.walletBalance || 0,
+                      preferredLanguage: user.preferredLanguage || 'English',
+                      currency: user.currency || 'INR',
+                    }}
+                  />
+                )}
+              </div>
             </div>
           </div>
         </div>

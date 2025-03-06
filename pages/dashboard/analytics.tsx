@@ -1,24 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import Head from 'next/head';
 import Analytics from '../../components/dashboard/Analytics';
 import DashboardLayout from '../../components/layouts/DashboardLayout';
-
-// Mock data for demonstration
-const mockData = {
-  deliveryStats: {
-    total: 150,
-    completed: 120,
-    inProgress: 25,
-    cancelled: 5,
-  },
-  earnings: {
-    total: 15000,
-    thisMonth: 3500,
-    lastMonth: 2800,
-  },
-};
+import { useAuth } from '../../context/AuthContext';
 
 export default function AnalyticsPage() {
+  const { user, loading } = useAuth();
+  const [analyticsData, setAnalyticsData] = useState({
+    deliveryStats: {
+      total: 0,
+      completed: 0,
+      inProgress: 0,
+      cancelled: 0,
+    },
+    earnings: {
+      total: 0,
+      thisMonth: 0,
+      lastMonth: 0,
+    },
+  });
+
+  // In the future, fetch real data from API
+  useEffect(() => {
+    // This would be replaced with actual API calls
+    // Example:
+    // const fetchAnalyticsData = async () => {
+    //   try {
+    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/user/analytics`, {
+    //       headers: { Authorization: `Bearer ${session?.accessToken}` }
+    //     });
+    //     const data = await response.json();
+    //     setAnalyticsData(data);
+    //   } catch (error) {
+    //     console.error('Error fetching analytics data:', error);
+    //   }
+    // };
+    // fetchAnalyticsData();
+  }, [user]);
+
+  if (loading) {
+    return (
+      <DashboardLayout>
+        <div className="flex justify-center items-center h-screen">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500"></div>
+        </div>
+      </DashboardLayout>
+    );
+  }
+
   return (
     <>
       <Head>
@@ -34,7 +63,7 @@ export default function AnalyticsPage() {
               Download Report
             </button>
           </div>
-          <Analytics deliveryStats={mockData.deliveryStats} earnings={mockData.earnings} />
+          <Analytics deliveryStats={analyticsData.deliveryStats} earnings={analyticsData.earnings} />
         </main>
       </DashboardLayout>
     </>

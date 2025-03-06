@@ -40,32 +40,17 @@ interface AnalyticsProps {
   };
 }
 
-const mockDeliveryData = {
-  total: 150,
-  completed: 120,
-  inProgress: 25,
-  cancelled: 5,
-};
-
-const mockEarnings = {
-  total: 15000,
-  thisMonth: 3500,
-  lastMonth: 2800,
-};
-
-export default function Analytics({ 
-  deliveryStats = mockDeliveryData, 
-  earnings = mockEarnings 
-}: Partial<AnalyticsProps>) {
+export default function Analytics({ deliveryStats, earnings }: AnalyticsProps) {
   const [selectedTimeRange, setSelectedTimeRange] = useState<'week' | 'month' | 'year'>('month');
 
-  // Line chart data for earnings
+  // Line chart data for earnings - using empty data for now
+  // This would be replaced with real data from API
   const earningsData = {
     labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [
       {
         label: 'Earnings',
-        data: [2000, 2800, 2200, 3500, 3200, 3800],
+        data: [0, 0, 0, 0, 0, 0], // Empty data for now
         borderColor: 'rgb(59, 130, 246)',
         backgroundColor: 'rgba(59, 130, 246, 0.5)',
         tension: 0.4,
@@ -73,13 +58,14 @@ export default function Analytics({
     ],
   };
 
-  // Bar chart data for deliveries
+  // Bar chart data for deliveries - using empty data for now
+  // This would be replaced with real data from API
   const deliveriesData = {
     labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [
       {
         label: 'Deliveries',
-        data: [5, 8, 6, 9, 7, 4, 3],
+        data: [0, 0, 0, 0, 0, 0, 0], // Empty data for now
         backgroundColor: 'rgba(59, 130, 246, 0.8)',
       },
     ],
@@ -90,7 +76,11 @@ export default function Analytics({
     labels: ['Completed', 'In Progress', 'Cancelled'],
     datasets: [
       {
-        data: [deliveryStats.completed, deliveryStats.inProgress, deliveryStats.cancelled],
+        data: [
+          deliveryStats.completed || 0, 
+          deliveryStats.inProgress || 0, 
+          deliveryStats.cancelled || 0
+        ],
         backgroundColor: [
           'rgba(34, 197, 94, 0.8)',
           'rgba(59, 130, 246, 0.8)',
@@ -209,10 +199,10 @@ export default function Analytics({
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   On-time Delivery Rate
                 </span>
-                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">95%</span>
+                <span className="text-sm font-medium text-blue-600 dark:text-blue-400">0%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '95%' }} />
+                <div className="bg-blue-600 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
@@ -220,10 +210,10 @@ export default function Analytics({
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Customer Satisfaction
                 </span>
-                <span className="text-sm font-medium text-green-600 dark:text-green-400">88%</span>
+                <span className="text-sm font-medium text-green-600 dark:text-green-400">0%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: '88%' }} />
+                <div className="bg-green-600 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
             <div>
@@ -231,10 +221,10 @@ export default function Analytics({
                 <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                   Package Safety
                 </span>
-                <span className="text-sm font-medium text-purple-600 dark:text-purple-400">98%</span>
+                <span className="text-sm font-medium text-purple-600 dark:text-purple-400">0%</span>
               </div>
               <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
-                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '98%' }} />
+                <div className="bg-purple-600 h-2 rounded-full" style={{ width: '0%' }} />
               </div>
             </div>
           </div>
