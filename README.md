@@ -25,7 +25,7 @@ SwiftPick is a modern delivery platform that connects travelers with people who 
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/swiftpick.git
+git clone https://github.com/sreevarshan-xenoz/SwiftPick.git
 ```
 
 2. Install dependencies:
