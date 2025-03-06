@@ -1,6 +1,7 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Image from 'next/image';
 import { SuccessPopup } from '../common/SuccessPopup';
+import { useAuth } from '../../context/AuthContext';
 
 interface UserProfileProps {
   user: {
@@ -32,29 +33,11 @@ interface Transaction {
   status: 'completed' | 'pending' | 'failed';
 }
 
-const mockTransactions: Transaction[] = [
-  {
-    id: '1',
-    type: 'credit',
-    amount: 500,
-    description: 'Payment received for delivery #1234',
-    date: '2024-01-15',
-    status: 'completed'
-  },
-  {
-    id: '2',
-    type: 'debit',
-    amount: 200,
-    description: 'Delivery fee for package #5678',
-    date: '2024-01-14',
-    status: 'completed'
-  }
-];
-
 const languages = ['English', 'Hindi', 'Tamil', 'Telugu', 'Kannada', 'Malayalam'];
 const currencies = ['INR', 'USD', 'EUR', 'GBP'];
 
 export default function UserProfile({ user }: UserProfileProps) {
+  const { user: authUser } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState({
@@ -66,6 +49,36 @@ export default function UserProfile({ user }: UserProfileProps) {
   const [profileImage, setProfileImage] = useState('/default-avatar.png');
   const [showSuccess, setShowSuccess] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [loadingTransactions, setLoadingTransactions] = useState(false);
+
+  useEffect(() => {
+    // This would be replaced with actual API calls in the future
+    // Example:
+    // const fetchTransactions = async () => {
+    //   try {
+    //     setLoadingTransactions(true);
+    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/transactions`, {
+    //       headers: { Authorization: `Bearer ${authUser?.token}` }
+    //     });
+    //     const data = await response.json();
+    //     setTransactions(data);
+    //   } catch (error) {
+    //     console.error('Error fetching transactions:', error);
+    //   } finally {
+    //     setLoadingTransactions(false);
+    //   }
+    // };
+    // fetchTransactions();
+
+    // For now, just set loading to false after a delay
+    setLoadingTransactions(true);
+    const timer = setTimeout(() => {
+      setLoadingTransactions(false);
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [authUser]);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -249,52 +262,73 @@ export default function UserProfile({ user }: UserProfileProps) {
       <div className="bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 rounded-lg p-6 text-white">
         <h3 className="text-lg font-semibold mb-2">Wallet Balance</h3>
         <p className="text-3xl font-bold">₹{user.walletBalance || 0}</p>
-        <div className="mt-4 flex space-x-2">
-          <button className="bg-white text-blue-600 px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-50 transition-colors">
-            Add Money
-          </button>
-          <button className="bg-blue-400 bg-opacity-25 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-30 transition-colors">
-            Withdraw
-          </button>
-        </div>
+      </div>
+
+      <div className="flex space-x-4">
+        <button className="flex-1 bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+          Add Money
+        </button>
+        <button className="flex-1 bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white py-2 px-4 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors">
+          Withdraw
+        </button>
       </div>
 
       <div>
         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">Transaction History</h3>
-        <div className="space-y-4">
-          {mockTransactions.map((transaction) => (
-            <div
-              key={transaction.id}
-              className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
-            >
-              <div className="flex items-start space-x-3">
-                <div className="flex-shrink-0">
-                  {transaction.type === 'credit' ? '💰' : '📤'}
+        {loadingTransactions ? (
+          <div className="flex justify-center py-8">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
+          </div>
+        ) : transactions.length > 0 ? (
+          <div className="space-y-4">
+            {transactions.map((transaction) => (
+              <div
+                key={transaction.id}
+                className="flex items-center justify-between p-4 bg-gray-50 dark:bg-gray-700 rounded-lg"
+              >
+                <div className="flex items-start space-x-3">
+                  <div className="flex-shrink-0">
+                    {transaction.type === 'credit' ? '💰' : '📤'}
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-900 dark:text-white">
+                      {transaction.description}
+                    </p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">
+                      {new Date(transaction.date).toLocaleDateString()}
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900 dark:text-white">
-                    {transaction.description}
+                <div className="text-right">
+                  <p className={`text-sm font-medium ${
+                    transaction.type === 'credit' 
+                      ? 'text-green-600 dark:text-green-400' 
+                      : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount}
                   </p>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">
-                    {new Date(transaction.date).toLocaleDateString()}
+                  <p className={`text-xs ${
+                    transaction.status === 'completed'
+                      ? 'text-green-600 dark:text-green-400'
+                      : transaction.status === 'pending'
+                        ? 'text-yellow-600 dark:text-yellow-400'
+                        : 'text-red-600 dark:text-red-400'
+                  }`}>
+                    {transaction.status.charAt(0).toUpperCase() + transaction.status.slice(1)}
                   </p>
                 </div>
               </div>
-              <div className="text-right">
-                <p className={`text-sm font-medium ${
-                  transaction.type === 'credit'
-                    ? 'text-green-600 dark:text-green-400'
-                    : 'text-red-600 dark:text-red-400'
-                }`}>
-                  {transaction.type === 'credit' ? '+' : '-'}₹{transaction.amount}
-                </p>
-                <p className="text-xs text-gray-500 dark:text-gray-400">
-                  {transaction.status}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto mb-4 text-gray-400 dark:text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <p>No transactions yet</p>
+            <p className="mt-2 text-sm">Your transaction history will appear here</p>
+          </div>
+        )}
       </div>
     </div>
   );

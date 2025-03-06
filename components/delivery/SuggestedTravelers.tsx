@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/router';
 import Image from 'next/image';
 import { LoadingSpinner } from '../common/LoadingSpinner';
 import { SuccessPopup } from '../common/SuccessPopup';
+import { useAuth } from '../../context/AuthContext';
 
 interface Traveler {
   id: string;
@@ -15,135 +16,158 @@ interface Traveler {
   profileImage: string;
 }
 
-const mockTravelers: Traveler[] = [
-  {
-    id: '1',
-    name: 'John Doe',
-    rating: 4.8,
-    completedDeliveries: 156,
-    route: 'Mumbai → Pune',
-    price: 250,
-    estimatedTime: '2-3 hours',
-    profileImage: '/default-avatar.png',
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    rating: 4.9,
-    completedDeliveries: 243,
-    route: 'Mumbai → Pune',
-    price: 300,
-    estimatedTime: '2 hours',
-    profileImage: '/default-avatar.png',
-  },
-  // Add more mock travelers as needed
-];
-
 export default function SuggestedTravelers() {
   const router = useRouter();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [showSuccess, setShowSuccess] = useState(false);
   const [selectedTraveler, setSelectedTraveler] = useState<string | null>(null);
+  const [travelers, setTravelers] = useState<Traveler[]>([]);
+
+  useEffect(() => {
+    // This would be replaced with actual API calls in the future
+    // Example:
+    // const fetchTravelers = async () => {
+    //   try {
+    //     setInitialLoading(true);
+    //     const response = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/travelers/suggested`, {
+    //       headers: { Authorization: `Bearer ${user?.token}` }
+    //     });
+    //     const data = await response.json();
+    //     setTravelers(data);
+    //   } catch (error) {
+    //     console.error('Error fetching travelers:', error);
+    //   } finally {
+    //     setInitialLoading(false);
+    //   }
+    // };
+    // fetchTravelers();
+
+    // For now, just set loading to false after a delay
+    const timer = setTimeout(() => {
+      setInitialLoading(false);
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [user]);
 
   const handleSelect = async (travelerId: string) => {
     setSelectedTraveler(travelerId);
     setLoading(true);
-    
-    try {
-      // TODO: Implement API call to select traveler
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulated API call
-      setShowSuccess(true);
-      setTimeout(() => {
-        router.push('/dashboard/delivery-tracking');
-      }, 1500);
-    } catch (error) {
-      console.error('Error selecting traveler:', error);
-    } finally {
-      setLoading(false);
-    }
+
+    // Simulate API call
+    await new Promise(resolve => setTimeout(resolve, 1500));
+
+    setShowSuccess(true);
+    setLoading(false);
+
+    // Hide success message after 3 seconds and redirect
+    setTimeout(() => {
+      setShowSuccess(false);
+      router.push('/dashboard/delivery-tracking');
+    }, 3000);
   };
+
+  if (initialLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8">
-      {showSuccess && (
-        <SuccessPopup
-          message="Traveler selected! Redirecting to tracking..."
-          duration={1500}
-        />
-      )}
-      
-      <div className="max-w-3xl mx-auto">
-        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-8">
-          Suggested Travelers
-        </h2>
+      <div className="max-w-7xl mx-auto">
+        <div className="flex justify-between items-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Suggested Travelers</h1>
+        </div>
 
-        <div className="space-y-4">
-          {mockTravelers.map((traveler) => (
-            <div
-              key={traveler.id}
-              className="bg-white dark:bg-gray-800 rounded-lg shadow p-6 hover:shadow-lg transition-shadow duration-300"
-            >
-              <div className="flex items-start space-x-4">
-                <div className="relative w-16 h-16 rounded-full overflow-hidden">
-                  <Image
-                    src={traveler.profileImage}
-                    alt={`${traveler.name}'s profile`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-
-                <div className="flex-1">
-                  <div className="flex items-center justify-between">
-                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white">
-                      {traveler.name}
-                    </h3>
-                    <span className="text-lg font-bold text-green-600 dark:text-green-400">
-                      ₹{traveler.price}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 grid grid-cols-2 gap-4">
+        {travelers.length > 0 ? (
+          <div className="space-y-6">
+            {travelers.map((traveler) => (
+              <div key={traveler.id} className="bg-white dark:bg-gray-800 rounded-lg shadow p-6">
+                <div className="flex flex-col md:flex-row md:items-center">
+                  <div className="flex items-center mb-4 md:mb-0 md:mr-6">
+                    <div className="relative w-16 h-16 rounded-full overflow-hidden mr-4">
+                      <Image
+                        src={traveler.profileImage || '/default-avatar.png'}
+                        alt={traveler.name}
+                        fill
+                        className="object-cover"
+                      />
+                    </div>
                     <div>
-                      <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
-                        <span className="mr-1">⭐</span>
-                        <span>{traveler.rating}</span>
-                        <span className="mx-1">•</span>
-                        <span>{traveler.completedDeliveries} deliveries</span>
-                      </div>
-                      <div className="text-sm text-gray-600 dark:text-gray-300 mt-1">
-                        {traveler.route}
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        Estimated Time
-                      </div>
-                      <div className="text-sm font-medium text-gray-900 dark:text-white">
-                        {traveler.estimatedTime}
+                      <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{traveler.name}</h3>
+                      <div className="flex items-center">
+                        <span className="text-yellow-400">★</span>
+                        <span className="text-sm text-gray-700 dark:text-gray-300 ml-1">{traveler.rating}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400 ml-2">
+                          ({traveler.completedDeliveries} deliveries)
+                        </span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="mt-4">
+                  <div className="flex-1 grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Route</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{traveler.route}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Estimated Time</p>
+                      <p className="font-medium text-gray-900 dark:text-white">{traveler.estimatedTime}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 dark:text-gray-400">Price</p>
+                      <p className="font-medium text-green-600 dark:text-green-400">₹{traveler.price}</p>
+                    </div>
+                  </div>
+
+                  <div className="mt-4 md:mt-0 md:ml-6">
                     <button
                       onClick={() => handleSelect(traveler.id)}
                       disabled={loading && selectedTraveler === traveler.id}
-                      className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:bg-blue-400 disabled:cursor-not-allowed"
+                      className="w-full md:w-auto bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors disabled:opacity-50"
                     >
                       {loading && selectedTraveler === traveler.id ? (
-                        <LoadingSpinner size="sm" />
+                        <span className="flex items-center">
+                          <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          </svg>
+                          Processing
+                        </span>
                       ) : (
-                        'Select Traveler'
+                        'Select'
                       )}
                     </button>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        ) : (
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-10 text-center">
+            <div className="text-5xl mb-4">👤</div>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">No travelers available</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">
+              There are no travelers available for your delivery at the moment.
+            </p>
+            <p className="text-gray-600 dark:text-gray-400">
+              Please check back later or try adjusting your delivery details.
+            </p>
+          </div>
+        )}
       </div>
+
+      {showSuccess && (
+        <SuccessPopup
+          message="Traveler selected successfully! You will be redirected to the tracking page."
+          onClose={() => setShowSuccess(false)}
+        />
+      )}
     </div>
   );
 } 

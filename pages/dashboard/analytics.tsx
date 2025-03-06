@@ -57,12 +57,6 @@ export default function AnalyticsPage() {
 
       <DashboardLayout>
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex justify-between items-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Analytics Dashboard</h1>
-            <button className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-              Download Report
-            </button>
-          </div>
           <Analytics deliveryStats={analyticsData.deliveryStats} earnings={analyticsData.earnings} />
         </main>
       </DashboardLayout>
