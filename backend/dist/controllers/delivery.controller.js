@@ -53,51 +53,30 @@ exports.createDelivery = createDelivery;
 // @access  Private (Travelers only)
 const getAvailableDeliveries = async (req, res) => {
     try {
-        const { location, radius, maxWeight, urgency, sortBy } = req.query;
-        // Build query
-        const query = {
-            status: 'pending',
-            traveler: { $exists: false },
-        };
-        // Add filters
-        if (maxWeight) {
-            query.itemWeight = { $lte: Number(maxWeight) };
-        }
-        if (urgency && urgency !== 'all') {
-            query.urgency = urgency;
-        }
-        // In a real app, location and radius would filter based on geospatial queries
-        // For now, we'll just return all pending deliveries
-        // Build sort options
-        let sortOptions = {};
-        switch (sortBy) {
-            case 'price_high':
-                sortOptions = { price: -1 };
-                break;
-            case 'price_low':
-                sortOptions = { price: 1 };
-                break;
-            case 'distance':
-                sortOptions = { distance: 1 };
-                break;
-            case 'urgency':
-                // Custom sort for urgency: express > urgent > normal
-                sortOptions = {
-                    urgency: 1, // This would need a custom sorting logic in a real app
-                };
-                break;
-            default:
-                sortOptions = { createdAt: -1 };
+        const { startLocation, endLocation } = req.query;
+        let query = { status: 'pending' };
+        // If start and end locations are provided, filter by them
+        if (startLocation && endLocation) {
+            query = {
+                ...query,
+                pickupAddress: { $regex: startLocation, $options: 'i' },
+                dropAddress: { $regex: endLocation, $options: 'i' }
+            };
         }
         const deliveries = await delivery_model_1.default.find(query)
-            .sort(sortOptions)
-            .populate('sender', 'name rating')
-            .select('-__v');
-        res.json(deliveries);
+            .populate('sender', 'name email')
+            .sort({ createdAt: -1 });
+        res.status(200).json({
+            success: true,
+            data: deliveries
+        });
     }
     catch (error) {
-        console.error('Get available deliveries error:', error);
-        res.status(500).json({ message: 'Server error', error: error.message });
+        res.status(500).json({
+            success: false,
+            message: 'Error fetching available deliveries',
+            error: error instanceof Error ? error.message : 'Unknown error'
+        });
     }
 };
 exports.getAvailableDeliveries = getAvailableDeliveries;

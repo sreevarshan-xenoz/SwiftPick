@@ -13,7 +13,9 @@ const router = Router();
 // @route   POST /api/bank/add
 router.post('/add', protect, addBankAccount);
 
-// @route   GET /api/bank/accounts
+// @route   GET /api/ban
+// 
+//k/accounts
 router.get('/accounts', protect, getBankAccounts);
 
 // @route   PUT /api/bank/default/:accountId

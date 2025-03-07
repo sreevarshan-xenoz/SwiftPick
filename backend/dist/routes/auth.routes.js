@@ -23,6 +23,13 @@ router.post('/login', [
     (0, express_validator_1.body)('email').isEmail().withMessage('Please include a valid email'),
     (0, express_validator_1.body)('password').exists().withMessage('Password is required'),
 ], auth_controller_1.login);
+// @route   POST /api/auth/google
+router.post('/google', [
+    (0, express_validator_1.body)('email').isEmail().withMessage('Please include a valid email'),
+    (0, express_validator_1.body)('name').optional(),
+    (0, express_validator_1.body)('image').optional(),
+    (0, express_validator_1.body)('role').optional().isIn(['sender', 'traveler']).withMessage('Invalid role'),
+], auth_controller_1.googleAuth);
 // @route   GET /api/auth/me
 router.get('/me', auth_middleware_1.protect, auth_controller_1.getMe);
 exports.default = router;

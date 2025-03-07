@@ -96,6 +96,52 @@ const userSchema = new mongoose_1.Schema({
     profileImage: {
         type: String,
     },
+    kyc: {
+        status: {
+            type: String,
+            enum: ['not_submitted', 'pending', 'verified', 'rejected'],
+            default: 'not_submitted',
+        },
+        idType: {
+            type: String,
+            enum: ['passport', 'driving_license', 'national_id'],
+        },
+        idNumber: String,
+        idImage: String,
+        selfieImage: String,
+        addressProofImage: String,
+        rejectionReason: String,
+        submittedAt: Date,
+        verifiedAt: Date,
+    },
+    bankAccount: [{
+            status: {
+                type: String,
+                enum: ['not_added', 'pending', 'verified', 'rejected'],
+                default: 'not_added',
+            },
+            accountHolder: {
+                type: String,
+                trim: true,
+            },
+            accountNumber: {
+                type: String,
+                trim: true,
+            },
+            bankName: {
+                type: String,
+                trim: true,
+            },
+            ifscCode: {
+                type: String,
+                trim: true,
+            },
+            isDefault: {
+                type: Boolean,
+                default: false,
+            },
+            verifiedAt: Date,
+        }],
 }, {
     timestamps: true,
 });
